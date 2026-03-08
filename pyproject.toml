@@ -1,0 +1,53 @@
+[project]
+name = "fastapi-tutorial"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.18.4",
+    "asyncpg>=0.31.0",
+    "faker>=40.5.1",
+    "fastapi[standard]>=0.135.1",
+    "psycopg2-binary>=2.9.11",
+    "pydantic-settings>=2.13.1",
+    "python-dotenv>=1.2.2",
+    "ruff>=0.15.4",
+    "sqlmodel>=0.0.37",
+]
+
+[tool.fastapi]
+entrypoint = "app.main:app"
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+target-version = "py313"
+
+[tool.ruff.lint]
+fixable = ["ALL"]
+select = [
+    "E",
+    "F",
+    "FAST",
+    "PL",
+    "I",
+    "ARG",
+    "RET",
+    "ASYNC",
+    "B",
+    "A",
+    "ICN",
+    "SLF",
+    "SIM",
+    "C90",
+    "N",
+    "W"
+]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+skip-magic-trailing-comma = false
