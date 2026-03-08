@@ -12,12 +12,14 @@ async def get_user_repository(session: SessionDep):
     yield Repository[UserModel](session)
 
 
+
 type UserRepository = Repository[UserModel]
 UserRepositoryDep = Annotated[UserRepository, Depends(get_user_repository)]
 
 
 async def get_pet_repository(session: SessionDep):
     yield Repository[PetModel](session)
+
 
 
 type PetRepository = Repository[PetModel]
