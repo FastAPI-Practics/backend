@@ -27,35 +27,21 @@ class UserService:
         password_bytes = password.encode()
         password_hash_bytes = b64encode(password_bytes)
         password_hash = password_hash_bytes.decode()
-        user = UserModel(
-            **user_dump,
-            password_hash=password_hash
-        )
+        user = UserModel(**user_dump, password_hash=password_hash)
         return await self.__user_repository.save(user)
 
-    async def get_user(
-        self,
-        user_id: UUID
-    ) -> Optional[UserModel]:
+    async def get_user(self, user_id: UUID) -> Optional[UserModel]:
         return await self.__user_repository.get(user_id)
 
     async def update_user(
-        self,
-        user_update: UserUpdate,
-        user_id: UUID
+        self, user_update: UserUpdate, user_id: UUID
     ) -> Optional[UserModel]:
         return await self.__user_repository.update(user_id, user_update)
 
-    async def delete_user(
-        self,
-        user_id: UUID
-    ) -> Optional[UserModel]:
+    async def delete_user(self, user_id: UUID) -> Optional[UserModel]:
         return await self.__user_repository.delete(user_id)
 
-    async def get_user_pets(
-        self,
-        user_id: UUID
-    ) -> Sequence[PetModel]:
+    async def get_user_pets(self, user_id: UUID) -> Sequence[PetModel]:
         user = await self.__user_repository.get(user_id)
         if user is None:
             return []

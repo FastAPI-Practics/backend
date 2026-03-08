@@ -39,8 +39,7 @@ class Repository[Model: BaseModel]:
                     continue
                 if value is not None:
                     filter_statement = and_(
-                        filter_statement,
-                        getattr(self.__model, key) == value
+                        filter_statement, getattr(self.__model, key) == value
                     )
             select_statement = select_statement.where(filter_statement)
         if offset is not None:

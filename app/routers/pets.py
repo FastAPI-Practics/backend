@@ -7,11 +7,12 @@ from app.models.pets import PetModel
 from app.schemas.base import CommonListFilters
 
 router = APIRouter(
-    prefix="/pets",
-    tags=["pets"],
+    prefix='/pets',
+    tags=['pets'],
 )
 
-@router.get("/")
+
+@router.get('/')
 async def get_pets(
     pet_repository: PetRepositoryDep,
     filters: Annotated[CommonListFilters, Query()],
@@ -21,6 +22,7 @@ async def get_pets(
         limit=filters.limit,
     )
 
-@router.post("/")
+
+@router.post('/')
 async def create_pets(pet: PetModel, pet_repository: PetRepositoryDep) -> PetModel:
     return await pet_repository.save(pet)
