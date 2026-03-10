@@ -14,6 +14,7 @@ class AuthSettings(BaseSettings):
     token_lifetime_seconds: int = 300
     token_algorithm: str = 'HS256'
 
+
 class DBSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix='DB_',
@@ -27,6 +28,7 @@ class DBSettings(BaseSettings):
     password: str = 'pass'
     port: int = 5432
     name: str = 'db'
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file='.env')
