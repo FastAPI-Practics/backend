@@ -22,10 +22,8 @@ async def login(
         return None
     access_token = create_access_token(authenticated_user)
     refresh_token = create_access_token(authenticated_user)
-    return TokenData(
-        refresh_token=refresh_token,
-        access_token=access_token
-    )
+    return TokenData(refresh_token=refresh_token, access_token=access_token)
+
 
 @router.post('/refresh')
 async def refresh(
@@ -35,7 +33,4 @@ async def refresh(
         return None
     access_token = create_access_token(authenticated_user)
     refresh_token = create_access_token(authenticated_user)
-    return TokenData(
-        refresh_token=refresh_token,
-        access_token=access_token
-    )
+    return TokenData(refresh_token=refresh_token, access_token=access_token)
