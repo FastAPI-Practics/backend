@@ -14,6 +14,7 @@ router = APIRouter(
     tags=['users'],
 )
 
+
 @router.get('/me')
 async def get_profile(current_user: CurrentUserDep) -> Optional[UserPublic]:
     return current_user

@@ -10,8 +10,7 @@ from app.dependencies.services import UserServiceDep
 from app.models.users import UserModel
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl='/api/v1/auth/login',
-    refreshUrl='/api/v1/auth/refresh'
+    tokenUrl='/api/v1/auth/login', refreshUrl='/api/v1/auth/refresh'
 )
 
 
