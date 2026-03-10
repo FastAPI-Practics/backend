@@ -1,7 +1,8 @@
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship, SQLModel
+from pydantic import EmailStr
+from sqlmodel import Column, Field, Relationship, SQLModel, String
 
 from app.models.base import BaseModel
 
@@ -18,6 +19,7 @@ class UserStatus(str, Enum):
 class UserBase(SQLModel):
     first_name: str
     last_name: str
+    email: EmailStr = Field(sa_column=Column(String, unique=True, nullable=True))
 
 
 class UserPublic(BaseModel, UserBase):

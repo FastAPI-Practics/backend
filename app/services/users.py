@@ -1,4 +1,3 @@
-from base64 import b64encode
 from typing import Optional, Sequence
 from uuid import UUID
 
@@ -6,6 +5,7 @@ from app.dependencies.repositories import UserRepository, UserRepositoryDep
 from app.models.pets import PetModel
 from app.models.users import UserCreate, UserModel, UserUpdate
 from app.schemas.users import UserFilters
+from app.utils.hashing import get_password_hash
 
 
 class UserService:
@@ -21,12 +21,18 @@ class UserService:
             limit=filters.limit,
         )
 
+    async def get_user_by_email(self, email: str) -> Optional[UserModel]:
+        users = await self.__user_repository.fetch(
+            filters=UserFilters(email=email),
+        )
+        if len(users) != 1:
+            return None
+        return users[0]
+
     async def create_user(self, user_create: UserCreate) -> UserModel:
         user_dump = user_create.model_dump()
         password = str(user_dump.pop('password'))
-        password_bytes = password.encode()
-        password_hash_bytes = b64encode(password_bytes)
-        password_hash = password_hash_bytes.decode()
+        password_hash = get_password_hash(password)
         user = UserModel(**user_dump, password_hash=password_hash)
         return await self.__user_repository.save(user)
 

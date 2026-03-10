@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI
 
-from app.routers import pets, users
+from app.routers import pets, security, users
 
 api_prefix = '/api'
 
@@ -13,5 +13,6 @@ app = FastAPI(
 app_router = APIRouter(prefix=f'{api_prefix}/v1')
 app_router.include_router(users.router)
 app_router.include_router(pets.router)
+app_router.include_router(security.router)
 
 app.include_router(app_router)

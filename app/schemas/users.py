@@ -8,3 +8,4 @@ class UserFilters(CommonListFilters):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     status: Optional[UserStatus] = None
+    email: Optional[str] = None
