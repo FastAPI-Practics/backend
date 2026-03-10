@@ -2,7 +2,8 @@ from fastapi import APIRouter, FastAPI
 
 from app.routers import pets, users
 
-app = FastAPI()
+app = FastAPI(docs_url='/api/docs', redoc_url='/api/redoc')
+
 app_router = APIRouter(prefix='/api/v1')
 app_router.include_router(users.router)
 app_router.include_router(pets.router)

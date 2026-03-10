@@ -244,6 +244,7 @@ dependencies = [
     { name = "psycopg2-binary" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
+    { name = "python-generics" },
     { name = "ruff" },
     { name = "sqlmodel" },
 ]
@@ -258,6 +259,7 @@ requires-dist = [
     { name = "psycopg2-binary", specifier = ">=2.9.11" },
     { name = "pydantic-settings", specifier = ">=2.13.1" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
+    { name = "python-generics", specifier = ">=0.2.4" },
     { name = "ruff", specifier = ">=0.15.4" },
     { name = "sqlmodel", specifier = ">=0.0.37" },
 ]
@@ -725,6 +727,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/82/ed/0301aeeac3e5353ef3d94b6ec08bbcabd04a72018415dcb29e588514bba8/python_dotenv-1.2.2.tar.gz", hash = "sha256:2c371a91fbd7ba082c2c1dc1f8bf89ca22564a087c2c287cd9b662adde799cf3", size = 50135, upload-time = "2026-03-01T16:00:26.196Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0b/d7/1959b9648791274998a9c3526f6d0ec8fd2233e4d4acce81bbae76b44b2a/python_dotenv-1.2.2-py3-none-any.whl", hash = "sha256:1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a", size = 22101, upload-time = "2026-03-01T16:00:25.09Z" },
+]
+
+[[package]]
+name = "python-generics"
+version = "0.2.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b5/04/f9297d0da5a68565549cf60ab2c9523dd664fd3715778b09b77ff6d323de/python_generics-0.2.4.tar.gz", hash = "sha256:9243a269ef325552efb193f83eefe0431edbce78514cca0c8b4f1d57a2c31b20", size = 12770, upload-time = "2025-11-04T18:39:59.82Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ee/59/fabba6cc1d196ab650691bbf83882cc28665868819a294a2025926bddbc6/python_generics-0.2.4-py3-none-any.whl", hash = "sha256:c0d4bad282223a1ae9034c8988eb9730dfa08978c2b569c175dfa83d60ee088a", size = 7318, upload-time = "2025-11-04T18:39:58.48Z" },
 ]
 
 [[package]]
