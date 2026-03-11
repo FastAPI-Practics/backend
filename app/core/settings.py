@@ -11,7 +11,8 @@ class AuthSettings(BaseSettings):
     )
 
     secret: str = 'secret'
-    token_lifetime_seconds: int = 300
+    access_token_lifetime_seconds: int = 300
+    refresh_token_lifetime_seconds: int = 600
     token_algorithm: str = 'HS256'
 
 

@@ -1,11 +1,10 @@
-from typing import Annotated, Optional
+from typing import Optional
 
 from fastapi import APIRouter
-from fastapi.params import Depends
 
-from app.core.security import create_access_token
+from app.core.security import create_access_token, create_refresh_token
 from app.dependencies.security import AuthenticatedUserDep, CurrentUserFromRefreshDep
-from app.schemas.security import AuthData, TokenData
+from app.schemas.security import TokenData
 
 router = APIRouter(
     prefix='/auth',
@@ -17,11 +16,10 @@ router = APIRouter(
 async def login(
     authenticated_user: AuthenticatedUserDep,
 ) -> Optional[TokenData]:
-    print(authenticated_user)
     if authenticated_user is None:
         return None
     access_token = create_access_token(authenticated_user)
-    refresh_token = create_access_token(authenticated_user)
+    refresh_token = create_refresh_token(authenticated_user, access_token)
     return TokenData(refresh_token=refresh_token, access_token=access_token)
 
 
@@ -32,5 +30,5 @@ async def refresh(
     if authenticated_user is None:
         return None
     access_token = create_access_token(authenticated_user)
-    refresh_token = create_access_token(authenticated_user)
+    refresh_token = create_refresh_token(authenticated_user, access_token)
     return TokenData(refresh_token=refresh_token, access_token=access_token)
