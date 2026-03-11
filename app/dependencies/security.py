@@ -53,16 +53,12 @@ async def get_current_user_from_refresh_token(
     token: Annotated[str, Depends(oauth2_scheme)],
     user_service: UserServiceDep,
 ):
-    token_payload = jwt.decode(
-        token, settings.auth.secret, algorithms=settings.auth.token_algorithm
-    )
-    token_user_id = token_payload.get('sub')
     refresh_token = refresh_token_data.refresh_token
     refresh_token_payload = jwt.decode(
         refresh_token, settings.auth.secret, algorithms=settings.auth.token_algorithm
     )
-    refresh_token_user_id = refresh_token_payload.get('sub')
-    if token_user_id == refresh_token_user_id:
+    access_token = refresh_token_payload.get('token')
+    if token == access_token:
         return await get_current_user(refresh_token, user_service)
     return None
 
