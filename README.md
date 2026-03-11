@@ -23,6 +23,11 @@
 | AUTH_REFRESH_TOKEN_LIFETIME_SECONDS | Время жизни refresh-токенов в секундах | Число | 600 |
 | AUTH_TOKEN_ALGORITHM | Алгоритм шифрования JWT-токенов | Строка | HS256 |
 
+Для генерации AUTH_SECRET можно использовать openssl
+```bash
+openssh rand -hex 32
+```
+
 # Инструкции по запуску
 ## Пререквизиты
 - Установлен python
