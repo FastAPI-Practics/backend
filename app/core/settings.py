@@ -1,29 +1,18 @@
 from functools import lru_cache
 
+from pydantic import BaseModel, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class AuthSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix='AUTH_',
-        env_file='.env',
-        extra='ignore',
-    )
-
-    secret: str = 'secret'
+class AuthSettings(BaseModel):
+    secret: SecretStr
+    algorithm: str = 'HS256'
     access_token_lifetime_seconds: int = 300
-    refresh_token_lifetime_seconds: int = 600
-    token_algorithm: str = 'HS256'
+    refresh_token_lifetime_seconds: int = 3600
 
 
-class DBSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_prefix='DB_',
-        env_file='.env',
-        extra='ignore',
-    )
-
-    protocol: str = 'postgresql+asyncpg'
+class DbSettings(BaseModel):
+    driver: str = 'postgresql+asyncpg'
     host: str = 'localhost'
     user: str = 'postgres'
     password: str = 'pass'
@@ -32,10 +21,15 @@ class DBSettings(BaseSettings):
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file='.env')
+    db: DbSettings
+    auth: AuthSettings
 
-    db: DBSettings = DBSettings()
-    auth: AuthSettings = AuthSettings()
+    model_config = SettingsConfigDict(
+        env_file='.env', env_nested_delimiter='_', extra='ignore'
+    )
+
+    db: DbSettings
+    auth: AuthSettings
 
 
 @lru_cache

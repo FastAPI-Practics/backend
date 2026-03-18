@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query
 
-from app.dependencies.security import CurrentUserDep
+from app.dependencies.auth import CurrentUserDep
 from app.dependencies.services import UserServiceDep
 from app.models.pets import PetModel
 from app.models.users import UserCreate, UserPublic, UserUpdate
@@ -17,7 +17,7 @@ router = APIRouter(
 
 @router.get('/me')
 async def get_profile(current_user: CurrentUserDep) -> Optional[UserPublic]:
-    return current_user
+    return await current_user
 
 
 @router.get('/')
