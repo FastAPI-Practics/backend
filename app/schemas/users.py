@@ -9,3 +9,4 @@ class UserFilters(CommonListFilters):
     last_name: Optional[str] = None
     status: Optional[UserStatus] = None
     email: Optional[str] = None
+    username: Optional[str] = None

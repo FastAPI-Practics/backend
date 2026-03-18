@@ -5,7 +5,7 @@ from app.dependencies.repositories import UserRepository, UserRepositoryDep
 from app.models.pets import PetModel
 from app.models.users import UserCreate, UserModel, UserUpdate
 from app.schemas.users import UserFilters
-from app.utils.hashing import get_password_hash
+from app.utils.hasher import Hasher
 
 
 class UserService:
@@ -32,12 +32,18 @@ class UserService:
     async def create_user(self, user_create: UserCreate) -> UserModel:
         user_dump = user_create.model_dump()
         password = str(user_dump.pop('password'))
-        password_hash = get_password_hash(password)
+        password_hash = Hasher.get_password_hash(password)
         user = UserModel(**user_dump, password_hash=password_hash)
         return await self.__user_repository.save(user)
 
     async def get_user(self, user_id: UUID) -> Optional[UserModel]:
         return await self.__user_repository.get(user_id)
+
+    async def get_user_by_username(self, username: str) -> Optional[UserModel]:
+        users = await self.__user_repository.fetch(UserFilters(username=username))
+        if len(users) != 1:
+            return None
+        return users[0]
 
     async def update_user(
         self, user_update: UserUpdate, user_id: UUID

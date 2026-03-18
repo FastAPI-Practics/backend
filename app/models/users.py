@@ -20,6 +20,7 @@ class UserBase(SQLModel):
     first_name: str
     last_name: str
     email: EmailStr = Field(sa_column=Column(String, unique=True, nullable=True))
+    username: str
 
 
 class UserPublic(BaseModel, UserBase):
