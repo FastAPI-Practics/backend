@@ -11,16 +11,15 @@ if TYPE_CHECKING:
 
 
 class PetType(str, Enum):
-    CAT = 'cat',
-    DOG = 'dog',
+    CAT = 'cat'
+    DOG = 'dog'
     PARROT = 'parrot'
 
 
 class PetModel(BaseModel, table=True):
     name: str
     type: PetType = Field(default=PetType.CAT)
-    owner_id: UUID = Field(default=None, foreign_key="usermodel.id", index=True)
-    owner: "UserModel" = Relationship(
-        back_populates="pets",
-        sa_relationship_kwargs={'lazy': 'selectin'}
+    owner_id: UUID = Field(default=None, foreign_key='usermodel.id', index=True)
+    owner: 'UserModel' = Relationship(
+        back_populates='pets', sa_relationship_kwargs={'lazy': 'selectin'}
     )

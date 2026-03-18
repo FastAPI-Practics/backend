@@ -14,24 +14,29 @@ class UserStatus(str, Enum):
     CONFIRMED = 'confirmed'
     BANNED = 'banned'
 
+
 class UserBase(SQLModel):
     first_name: str
     last_name: str
 
+
 class UserPublic(BaseModel, UserBase):
     pass
+
 
 class UserUpdate(UserBase):
     pass
 
+
 class UserCreate(UserBase):
     password: str
+
 
 class UserModel(UserPublic, table=True):
     password_hash: str
     status: UserStatus = Field(default=UserStatus.CREATED)
-    pets: list["PetModel"] = Relationship(
-        back_populates="owner",
+    pets: list['PetModel'] = Relationship(
+        back_populates='owner',
         cascade_delete=True,
-        sa_relationship_kwargs={'lazy': 'selectin'}
+        sa_relationship_kwargs={'lazy': 'selectin'},
     )

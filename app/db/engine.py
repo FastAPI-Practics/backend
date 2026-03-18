@@ -11,7 +11,8 @@ def form_db_url() -> str:
         password=settings.db_password,
         host=settings.db_host,
         port=settings.db_port,
-        database=settings.db_name
+        database=settings.db_name,
     ).render_as_string(hide_password=False)
+
 
 engine = create_async_engine(form_db_url())

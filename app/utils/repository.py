@@ -1,6 +1,7 @@
 from typing import Optional, Sequence
 from uuid import UUID
 
+from generics import get_filled_type
 from pydantic import BaseModel as PydanticBaseModel
 from sqlalchemy.sql._typing import (
     _ColumnExpressionArgument,
@@ -8,21 +9,27 @@ from sqlalchemy.sql._typing import (
 from sqlmodel import and_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.dependencies.session import SessionDep
 from app.models.base import BaseModel
 
 type FilterType = _ColumnExpressionArgument[bool] | bool
 
 
 class Repository[Model: BaseModel]:
-    __model: type[Model]
+    __model: type[Model] | None = None
     __session: AsyncSession
 
-    def __init__(self, model: type[Model], session):
-        self.__model = model
+    @property
+    def model(self) -> type[Model]:
+        if self.__model is None:
+            self.__model = get_filled_type(self, Repository, 0)
+        return self.__model
+
+    def __init__(self, session: SessionDep):
         self.__session = session
 
     async def get(self, pk: UUID) -> Optional[Model]:
-        return await self.__session.get(self.__model, pk)
+        return await self.__session.get(self.model, pk)
 
     async def fetch(
         self,
@@ -30,7 +37,7 @@ class Repository[Model: BaseModel]:
         offset: Optional[int] = None,
         limit: Optional[int] = None,
     ) -> Sequence[Model]:
-        select_statement = select(self.__model)
+        select_statement = select(self.model)
         if filters is not None:
             filter_statement = and_(True)
             filters_dict = filters.model_dump()
@@ -39,8 +46,7 @@ class Repository[Model: BaseModel]:
                     continue
                 if value is not None:
                     filter_statement = and_(
-                        filter_statement,
-                        getattr(self.__model, key) == value
+                        filter_statement, getattr(self.model, key) == value
                     )
             select_statement = select_statement.where(filter_statement)
         if offset is not None:
