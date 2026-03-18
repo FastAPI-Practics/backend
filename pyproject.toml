@@ -21,6 +21,9 @@ dependencies = [
     "sqlmodel>=0.0.37",
 ]
 
+[tool.mypy]
+plugins = ['pydantic.mypy']
+
 [tool.fastapi]
 entrypoint = "app.main:app"
 
