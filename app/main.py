@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI
 
-from app.routers import auth, pets, users
+from app.routers import auth, permissions, pets, roles, users
 
 api_prefix = '/api'
 
@@ -14,5 +14,7 @@ app_router = APIRouter(prefix=f'{api_prefix}/v1')
 app_router.include_router(users.router)
 app_router.include_router(pets.router)
 app_router.include_router(auth.router)
+app_router.include_router(permissions.router)
+app_router.include_router(roles.router)
 
 app.include_router(app_router)
