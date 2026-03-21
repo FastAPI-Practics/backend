@@ -3,8 +3,10 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.dependencies.session import SessionDep
+from app.models.permissions import Permission
 from app.models.pets import PetModel
 from app.models.refresh import RefreshSession
+from app.models.roles import Role
 from app.models.users import UserModel
 from app.utils.repository import Repository
 
@@ -32,4 +34,22 @@ async def get_refresh_session_repository(session: SessionDep):
 type RefreshSessionRepository = Repository[RefreshSession]
 RefreshSessionRepositoryDep = Annotated[
     RefreshSessionRepository, Depends(get_refresh_session_repository)
+]
+
+
+async def get_role_repository(session: SessionDep):
+    yield Repository[Role](session)
+
+
+type RoleRepository = Repository[Role]
+RoleRepositoryDep = Annotated[RoleRepository, Depends(get_role_repository)]
+
+
+async def get_permission_repository(session: SessionDep):
+    yield Repository[Permission](session)
+
+
+type PermissionRepository = Repository[Permission]
+PermissionRepositoryDep = Annotated[
+    PermissionRepository, Depends(get_permission_repository)
 ]

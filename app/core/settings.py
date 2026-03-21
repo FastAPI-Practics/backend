@@ -4,6 +4,14 @@ from pydantic import BaseModel, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class RBACSettings(BaseModel):
+    admin_role: str = 'admin'
+    public_role: str = 'vet'
+
+    admin_email: str = 'admin@admin.ru'
+    admin_password: str = 'pass'
+
+
 class AuthSettings(BaseModel):
     secret: SecretStr
     algorithm: str = 'HS256'
@@ -23,6 +31,7 @@ class DbSettings(BaseModel):
 class Settings(BaseSettings):
     db: DbSettings
     auth: AuthSettings
+    rbac: RBACSettings
 
     model_config = SettingsConfigDict(
         env_file='.env', env_nested_delimiter='_', extra='ignore'
