@@ -1,15 +1,15 @@
 from functools import lru_cache
 
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel, EmailStr, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class RBACSettings(BaseModel):
-    admin_role: str = 'admin'
-    public_role: str = 'vet'
-
-    admin_email: str = 'admin@admin.ru'
+    admin_a: str = 'aa'
+    admin_email: EmailStr = 'admin@admin.ru'
     admin_password: str = 'pass'
+    admin_role: str = 'admin'
+    public_role: str = 'user'
 
 
 class AuthSettings(BaseModel):
@@ -34,11 +34,8 @@ class Settings(BaseSettings):
     rbac: RBACSettings
 
     model_config = SettingsConfigDict(
-        env_file='.env', env_nested_delimiter='_', extra='ignore'
+        env_file='.env', env_nested_delimiter='__', extra='ignore', case_sensitive=False
     )
-
-    db: DbSettings
-    auth: AuthSettings
 
 
 @lru_cache

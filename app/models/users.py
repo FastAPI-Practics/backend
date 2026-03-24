@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+from uuid import UUID
 
 from pydantic import EmailStr
 from sqlmodel import Column, Field, Relationship, SQLModel, String
@@ -8,6 +9,7 @@ from app.models.base import BaseModel
 
 if TYPE_CHECKING:
     from app.models.pets import PetModel
+    from app.models.roles import Role
 
 
 class UserStatus(str, Enum):
@@ -23,7 +25,11 @@ class UserBase(SQLModel):
     username: str
 
 
-class UserPublic(BaseModel, UserBase):
+class UserWithRole(UserBase):
+    role_id: Optional[UUID] = Field(foreign_key='role.id')
+
+
+class UserPublic(BaseModel, UserWithRole):
     pass
 
 
@@ -41,5 +47,9 @@ class UserModel(UserPublic, table=True):
     pets: list['PetModel'] = Relationship(
         back_populates='owner',
         cascade_delete=True,
+        sa_relationship_kwargs={'lazy': 'selectin'},
+    )
+    role: 'Role' = Relationship(
+        back_populates='users',
         sa_relationship_kwargs={'lazy': 'selectin'},
     )
