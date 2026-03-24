@@ -3,11 +3,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Security
 
+from app.core.responses import auth_responses, detail_responses
+from app.core.security import AccessTokenDep
 from app.dependencies.auth import CurrentUser, get_current_user
 from app.dependencies.services import UserServiceDep
 from app.models.pets import PetModel
 from app.models.users import UserPublic, UserUpdate
 from app.schemas.users import UserFilters
+from app.utils.errors import ForbiddenError, NotFoundError
 
 router = APIRouter(
     prefix='/users',
@@ -24,7 +27,7 @@ async def get_profile(
     return current_user
 
 
-@router.get('/')
+@router.get(path='/', responses=auth_responses)
 async def get_users(
     current_user: Annotated[
         CurrentUser, Security(get_current_user, scopes=['profile:list'])
@@ -33,31 +36,47 @@ async def get_users(
     filters: Annotated[UserFilters, Query()],
 ) -> Optional[Sequence[UserPublic]]:
     if current_user is None:
-        return None
+        raise ForbiddenError()
     return await user_service.get_users(filters)
 
 
-@router.get('/{user_id}')
+@router.get(
+    path='/{user_id}',
+    responses={
+        **auth_responses,
+        **detail_responses,
+    },
+)
 async def get_user(user_service: UserServiceDep, user_id: UUID) -> Optional[UserPublic]:
+    user = await user_service.get_user(user_id)
+    if user is None:
+        raise NotFoundError()
     return await user_service.get_user(user_id)
 
 
 @router.put('/{user_id}')
 async def update_user(
-    user_service: UserServiceDep, user_update: UserUpdate, user_id: UUID
+    user_service: UserServiceDep,
+    user_update: UserUpdate,
+    user_id: UUID,
+    _: AccessTokenDep,
 ) -> Optional[UserPublic]:
     return await user_service.update_user(user_update, user_id)
 
 
 @router.delete('/{user_id}')
 async def delete_user(
-    user_service: UserServiceDep, user_id: UUID
+    user_service: UserServiceDep,
+    user_id: UUID,
+    _: AccessTokenDep,
 ) -> Optional[UserPublic]:
     return await user_service.delete_user(user_id)
 
 
 @router.get('/{user_id}/pets')
 async def get_user_pets(
-    user_service: UserServiceDep, user_id: UUID
+    user_service: UserServiceDep,
+    user_id: UUID,
+    _: AccessTokenDep,
 ) -> Sequence[PetModel]:
     return await user_service.get_user_pets(user_id)
