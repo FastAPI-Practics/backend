@@ -2,6 +2,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
 
+from app.core.error_handlers import exception_handler
+from app.core.middlewares import request_logging_middleware
+from app.core.responses import common_responses
 from app.dependencies.repositories import (
     get_permission_repository,
     get_role_repository,
@@ -52,7 +55,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app_router = APIRouter(prefix=f'{api_prefix}/v1')
+app.add_exception_handler(exc_class_or_status_code=Exception, handler=exception_handler)
+
+app_router = APIRouter(prefix=f'{api_prefix}/v1', responses=common_responses)
 app_router.include_router(users.router)
 app_router.include_router(pets.router)
 app_router.include_router(auth.router)
@@ -60,3 +65,4 @@ app_router.include_router(permissions.router)
 app_router.include_router(roles.router)
 
 app.include_router(app_router)
+app.middleware('http')(request_logging_middleware)
