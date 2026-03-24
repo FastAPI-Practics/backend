@@ -36,6 +36,15 @@ class UserService:
         user = UserModel(**user_dump, password_hash=password_hash)
         return await self.__user_repository.save(user)
 
+    async def save_user(self, user: UserModel) -> UserModel:
+        return await self.__user_repository.save(user)
+
+    async def create_user_if_not_exists(self, user_create: UserCreate) -> UserModel:
+        user = await self.get_user_by_email(user_create.email)
+        if user is not None:
+            return user
+        return await self.create_user(user_create)
+
     async def get_user(self, user_id: UUID) -> Optional[UserModel]:
         return await self.__user_repository.get(user_id)
 

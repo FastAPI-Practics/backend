@@ -1,12 +1,12 @@
 from typing import Annotated, Optional, Sequence
 from uuid import UUID
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Security
 
-from app.dependencies.auth import CurrentUserDep
+from app.dependencies.auth import CurrentUser, get_current_user
 from app.dependencies.services import UserServiceDep
 from app.models.pets import PetModel
-from app.models.users import UserCreate, UserPublic, UserUpdate
+from app.models.users import UserPublic, UserUpdate
 from app.schemas.users import UserFilters
 
 router = APIRouter(
@@ -16,23 +16,25 @@ router = APIRouter(
 
 
 @router.get('/me')
-async def get_profile(current_user: CurrentUserDep) -> Optional[UserPublic]:
-    return await current_user
+async def get_profile(
+    current_user: Annotated[
+        CurrentUser, Security(get_current_user, scopes=['profile:detail'])
+    ],
+) -> Optional[UserPublic]:
+    return current_user
 
 
 @router.get('/')
 async def get_users(
-    user_service: UserServiceDep, filters: Annotated[UserFilters, Query()]
-) -> Sequence[UserPublic]:
-    return await user_service.get_users(filters)
-
-
-@router.post('/')
-async def create_user(
-    user_create: UserCreate,
+    current_user: Annotated[
+        CurrentUser, Security(get_current_user, scopes=['profile:list'])
+    ],
     user_service: UserServiceDep,
-) -> UserPublic:
-    return await user_service.create_user(user_create)
+    filters: Annotated[UserFilters, Query()],
+) -> Optional[Sequence[UserPublic]]:
+    if current_user is None:
+        return None
+    return await user_service.get_users(filters)
 
 
 @router.get('/{user_id}')

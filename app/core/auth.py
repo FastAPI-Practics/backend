@@ -2,16 +2,21 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID, uuid4
 
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, SecurityScopes
 from jwt import decode, encode
 
 from app.core.security import AccessTokenDep
 from app.core.settings import settings
-from app.dependencies.services import RefreshSessionServiceDep, UserServiceDep
+from app.dependencies.services import (
+    RefreshSessionServiceDep,
+    RoleServiceDep,
+    UserServiceDep,
+)
 from app.models.refresh import RefreshSession, RefreshSessionCreate
-from app.models.users import UserModel
+from app.models.users import UserCreate, UserModel
 from app.schemas.auth import AuthTokenData
 from app.services.refresh import RefreshSessionService
+from app.services.roles import RoleService
 from app.services.users import UserService
 from app.utils.hasher import Hasher
 
@@ -19,14 +24,17 @@ from app.utils.hasher import Hasher
 class Authenticator:
     __user_service: UserService
     __refresh_session_service: RefreshSessionService
+    __role_service: RoleService
 
     def __init__(
         self,
         user_service: UserServiceDep,
         refresh_session_service: RefreshSessionServiceDep,
+        role_service: RoleServiceDep,
     ):
         self.__user_service = user_service
         self.__refresh_session_service = refresh_session_service
+        self.__role_service = role_service
 
     async def __generate_tokens(self, user_id: UUID) -> Optional[AuthTokenData]:
         has_active_sessions = (
@@ -115,7 +123,7 @@ class Authenticator:
         return user_active_session, user_id, token_id
 
     async def authenticate_user(
-        self, access_token: AccessTokenDep
+        self, access_token: AccessTokenDep, security_scopes: SecurityScopes
     ) -> Optional[UserModel]:
         token_data = await self.__get_user_token_data(access_token)
         if token_data is None:
@@ -124,6 +132,17 @@ class Authenticator:
 
         if user_active_session.access_token_id != access_token_id:
             return None
+
+        user = await self.__user_service.get_user(user_id)
+
+        if not security_scopes.scopes:
+            return user
+
+        user_role = user.role
+        user_scopes = user_role.scopes
+        for security_scope in security_scopes.scopes:
+            if security_scope not in user_scopes:
+                return None
 
         return await self.__user_service.get_user(user_id)
 
@@ -164,4 +183,13 @@ class Authenticator:
         user_active_session.is_invalidated = True
         await self.__refresh_session_service.save_session(user_active_session)
 
+        return True
+
+    async def register(self, user_create: UserCreate) -> bool:
+        public_role = await self.__role_service.get_by_name(settings.rbac.public_role)
+        if public_role is None:
+            return False
+        user = await self.__user_service.create_user(user_create)
+        user.role = public_role
+        await self.__user_service.save_user(user)
         return True
