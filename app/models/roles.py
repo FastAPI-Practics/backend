@@ -8,6 +8,7 @@ from app.models.role_permissions import RolePermissionMapping
 
 if TYPE_CHECKING:
     from app.models.permissions import Permission
+    from app.models.users import UserModel
 
 
 class RoleBase(SQLModel):
@@ -41,5 +42,10 @@ class Role(RolePublic, table=True):
     permissions: list['Permission'] = Relationship(
         back_populates='roles',
         link_model=RolePermissionMapping,
+        sa_relationship_kwargs={'lazy': 'selectin'},
+    )
+    users: list['UserModel'] = Relationship(
+        back_populates='role',
+        cascade_delete=True,
         sa_relationship_kwargs={'lazy': 'selectin'},
     )

@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.security import AccessTokenDep
 from app.dependencies.auth import AuthenticatorDep
+from app.models.users import UserCreate
 from app.schemas.auth import AuthTokenData
 
 router = APIRouter(
@@ -20,6 +21,8 @@ async def login(
     response: Response,
 ) -> Optional[AuthTokenData]:
     tokens = await authenticator.create_tokens(auth_data)
+    if tokens is None:
+        return None
     response.set_cookie('refresh_token', tokens.refresh_token, httponly=True)
     return tokens
 
@@ -43,3 +46,11 @@ async def logout(
 ) -> Optional[bool]:
     response.set_cookie('refresh_token', None, expires=-1)
     return await authenticator.logout(token)
+
+
+@router.post('/register')
+async def register(
+    user_create: UserCreate,
+    authenticator: AuthenticatorDep,
+) -> bool:
+    return await authenticator.register(user_create)

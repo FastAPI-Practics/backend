@@ -27,3 +27,11 @@ class PermissionService:
     ) -> Optional[PermissionPublic]:
         instance = Permission(**permission_create.model_dump())
         return await self.__permission_repository.save(instance)
+
+    async def create_permission_if_not_exists(
+        self, permission_create: PermissionCreate
+    ) -> Optional[PermissionPublic]:
+        permission = await self.get_by_scope(permission_create.alias)
+        if permission is not None:
+            return permission
+        return await self.create_permission(permission_create)
