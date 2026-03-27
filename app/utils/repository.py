@@ -72,7 +72,7 @@ class Repository[Model: BaseModel]:
     async def delete(self, pk: UUID) -> Optional[Model]:
         instance = await self.get(pk)
         if instance is None:
-            return instance
+            return None
         await self.__session.delete(instance)
         await self.__session.commit()
         return instance
