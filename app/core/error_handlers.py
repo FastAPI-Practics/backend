@@ -1,8 +1,14 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from app.core.responses import auth_responses, common_responses, detail_responses
-from app.schemas.errors import ErrorSchema, InternalServerErrorSchema
+from app.core.responses import (
+    auth_responses,
+    common_responses,
+    detail_responses,
+    login_responses,
+    register_responses,
+)
+from app.schemas.responses import ErrorSchema, InternalServerErrorSchema
 
 
 async def exception_handler(_: Request, exc: Exception):
@@ -13,6 +19,15 @@ async def exception_handler(_: Request, exc: Exception):
         **auth_responses,
         **detail_responses,
     }
+
+    extra_responses = {**login_responses, **register_responses}
+
+    for code, config in extra_responses.items():
+        model: ErrorSchema = config.get('model', InternalServerErrorSchema)()
+        error_cls = model.error_cls
+        if isinstance(exc, error_cls):
+            status_code = code
+            break
 
     for code, config in expected_responses.items():
         model: ErrorSchema = config.get('model', InternalServerErrorSchema)()

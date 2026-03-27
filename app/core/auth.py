@@ -5,6 +5,12 @@ from uuid import UUID, uuid4
 from fastapi.security import OAuth2PasswordRequestForm, SecurityScopes
 from jwt import decode, encode
 
+from app.core.errors import (
+    ForbiddenError,
+    InternalServerError,
+    LoginError,
+    UnauthorizedError,
+)
 from app.core.security import AccessTokenDep
 from app.core.settings import settings
 from app.dependencies.services import (
@@ -115,7 +121,7 @@ class Authenticator:
         )
 
         if user_active_session is None:
-            return None
+            raise UnauthorizedError()
 
         raw_token_id = decoded_payload.get('jti', uuid4())
         token_id = UUID(raw_token_id)
@@ -127,11 +133,11 @@ class Authenticator:
     ) -> Optional[UserModel]:
         token_data = await self.__get_user_token_data(access_token)
         if token_data is None:
-            return None
+            raise UnauthorizedError()
         user_active_session, user_id, access_token_id = token_data
 
         if user_active_session.access_token_id != access_token_id:
-            return None
+            raise UnauthorizedError()
 
         user = await self.__user_service.get_user(user_id)
 
@@ -142,54 +148,51 @@ class Authenticator:
         user_scopes = user_role.scopes
         for security_scope in security_scopes.scopes:
             if security_scope not in user_scopes:
-                return None
+                raise ForbiddenError()
 
         return await self.__user_service.get_user(user_id)
 
-    async def create_tokens(
+    async def login(
         self, auth_data: OAuth2PasswordRequestForm
     ) -> Optional[AuthTokenData]:
         user = await self.__user_service.get_user_by_username(auth_data.username)
         password = auth_data.password
         if user is None:
-            return None
+            raise LoginError()
         if not Hasher.verify_password(password, user.password_hash):
-            return None
+            raise LoginError()
         return await self.__generate_tokens(user.id)
 
     async def refresh_tokens(self, refresh_token: str) -> Optional[AuthTokenData]:
         token_data = await self.__get_user_token_data(refresh_token)
         if token_data is None:
-            return None
+            raise UnauthorizedError()
         user_active_session, user_id, refresh_token_id = token_data
 
         if user_active_session.refresh_token_id != refresh_token_id:
-            return None
+            raise UnauthorizedError()
 
         user_active_session.is_invalidated = True
         await self.__refresh_session_service.save_session(user_active_session)
 
         return await self.__generate_tokens(user_id)
 
-    async def logout(self, access_token: AccessTokenDep) -> bool:
-        token_data = await self.__get_user_token_data(access_token)
+    async def logout(self, refresh_token: AccessTokenDep):
+        token_data = await self.__get_user_token_data(refresh_token)
         if token_data is None:
-            return False
-        user_active_session, _, access_token_id = token_data
+            raise UnauthorizedError()
+        user_active_session, _, refresh_token = token_data
 
-        if user_active_session.access_token_id != access_token_id:
-            return False
+        if user_active_session.refresh_token_id != refresh_token:
+            raise UnauthorizedError()
 
         user_active_session.is_invalidated = True
         await self.__refresh_session_service.save_session(user_active_session)
 
-        return True
-
-    async def register(self, user_create: UserCreate) -> bool:
+    async def register(self, user_create: UserCreate):
         public_role = await self.__role_service.get_by_name(settings.rbac.public_role)
         if public_role is None:
-            return False
+            raise InternalServerError()
         user = await self.__user_service.create_user(user_create)
         user.role = public_role
         await self.__user_service.save_user(user)
-        return True

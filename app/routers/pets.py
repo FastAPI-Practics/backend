@@ -1,9 +1,9 @@
 from typing import Annotated, Sequence
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Security
 
 from app.core.responses import auth_responses
-from app.core.security import AccessTokenDep
+from app.dependencies.auth import get_current_user
 from app.dependencies.repositories import PetRepositoryDep
 from app.models.pets import PetModel
 from app.schemas.base import CommonListFilters
@@ -11,11 +11,10 @@ from app.schemas.base import CommonListFilters
 router = APIRouter(prefix='/pets', tags=['pets'], responses=auth_responses)
 
 
-@router.get('/')
+@router.get(path='/', dependencies=[Security(get_current_user, scopes=['pets:list'])])
 async def get_pets(
     pet_repository: PetRepositoryDep,
     filters: Annotated[CommonListFilters, Query()],
-    _: AccessTokenDep,
 ) -> Sequence[PetModel]:
     return await pet_repository.fetch(
         offset=filters.offset,
@@ -23,10 +22,11 @@ async def get_pets(
     )
 
 
-@router.post('/')
+@router.post(
+    path='/', dependencies=[Security(get_current_user, scopes=['pets:create'])]
+)
 async def create_pets(
     pet: PetModel,
     pet_repository: PetRepositoryDep,
-    _: AccessTokenDep,
 ) -> PetModel:
     return await pet_repository.save(pet)
