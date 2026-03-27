@@ -65,5 +65,5 @@ class UserService:
     async def get_user_pets(self, user_id: UUID) -> Sequence[PetModel]:
         user = await self.__user_repository.get(user_id)
         if user is None:
-            return []
+            return None
         return user.pets

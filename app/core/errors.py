@@ -12,3 +12,11 @@ class ForbiddenError(Exception):
 
 class UnauthorizedError(Exception):
     message = 'You must be authorized'
+
+
+class LoginError(Exception):
+    message = 'Email or password is incorrect'
+
+
+class RegisterError(Exception):
+    message = 'User with this email already exists'
