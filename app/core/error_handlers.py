@@ -1,5 +1,7 @@
 from fastapi import Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from jwt import PyJWTError
 
 from app.core.responses import (
     auth_responses,
@@ -8,10 +10,36 @@ from app.core.responses import (
     login_responses,
     register_responses,
 )
-from app.schemas.responses import ErrorSchema, InternalServerErrorSchema
+from app.schemas.errors import (
+    ErrorSchema,
+    InternalServerErrorSchema,
+    UnauthorizedErrorSchema,
+)
+from app.utils.logger import logger
 
 
-async def exception_handler(_: Request, exc: Exception):
+async def exception_handler(request: Request, exc: Exception):
+    extra_data = {
+        'path': request.url.path,
+        'method': request.method,
+        'client_host': request.client.host,
+    }
+    logger.error(
+        'Error happened',
+        extra=extra_data,
+        exc_info=True,
+    )
+    if isinstance(exc, RequestValidationError):
+        return JSONResponse(
+            status_code=422,
+            content={'message': 'Validation error', 'detail': exc.errors()},
+        )
+    if isinstance(exc, PyJWTError):
+        JSONResponse(
+            status_code=401,
+            content=UnauthorizedErrorSchema().model_dump(),
+        )
+
     status_code = 500
 
     expected_responses = {
@@ -39,7 +67,7 @@ async def exception_handler(_: Request, exc: Exception):
     return JSONResponse(
         status_code=status_code,
         content={
-            'message': exc.message,
+            'message': exc.message if hasattr(exc, 'message') else None,
             'detail': exc.detail if hasattr(exc, 'detail') else None,
         },
     )

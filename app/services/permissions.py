@@ -1,7 +1,9 @@
-from typing import Optional, Sequence
+from typing import Optional
 
 from app.dependencies.repositories import PermissionRepository, PermissionRepositoryDep
 from app.models.permissions import Permission, PermissionCreate, PermissionPublic
+from app.schemas.permissions import PermissionFilters
+from app.utils.pagination import ListResponse
 
 
 class PermissionService:
@@ -10,8 +12,10 @@ class PermissionService:
     def __init__(self, permission_repository: PermissionRepositoryDep):
         self.__permission_repository = permission_repository
 
-    async def get_permissions(self) -> Sequence[PermissionPublic]:
-        return await self.__permission_repository.fetch()
+    async def get_permissions(
+        self, filters: PermissionFilters
+    ) -> ListResponse[PermissionPublic]:
+        return await self.__permission_repository.fetch_with_pagination_data(filters)
 
     async def get_by_scope(self, scope: str) -> Optional[PermissionPublic]:
         permissions = await self.__permission_repository.fetch()

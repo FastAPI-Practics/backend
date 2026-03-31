@@ -1,8 +1,10 @@
+import math
 from typing import Optional, Sequence
 from uuid import UUID
 
 from generics import get_filled_type
 from pydantic import BaseModel as PydanticBaseModel
+from sqlalchemy import func
 from sqlalchemy.sql._typing import (
     _ColumnExpressionArgument,
 )
@@ -11,6 +13,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.dependencies.session import SessionDep
 from app.models.base import BaseModel
+from app.schemas.base import CommonListFilters
+from app.utils.pagination import ListResponse, PaginationInfo
 
 type FilterType = _ColumnExpressionArgument[bool] | bool
 
@@ -31,13 +35,14 @@ class Repository[Model: BaseModel]:
     async def get(self, pk: UUID) -> Optional[Model]:
         return await self.__session.get(self.model, pk)
 
-    async def fetch(
+    def __form_select_statement(
         self,
         filters: Optional[PydanticBaseModel] = None,
-        offset: Optional[int] = None,
-        limit: Optional[int] = None,
-    ) -> Sequence[Model]:
+        with_count: bool = False,
+    ):
         select_statement = select(self.model)
+        if with_count:
+            select_statement = select(func.count(self.model.id))
         if filters is not None:
             filter_statement = and_(True)
             filters_dict = filters.model_dump()
@@ -49,12 +54,52 @@ class Repository[Model: BaseModel]:
                         filter_statement, getattr(self.model, key) == value
                     )
             select_statement = select_statement.where(filter_statement)
+        return select_statement
+
+    async def __exec_select(
+        self,
+        select_statement,
+        offset: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> Sequence[Model]:
         if offset is not None:
             select_statement = select_statement.offset(offset)
         if limit is not None:
             select_statement = select_statement.limit(limit)
         entities = await self.__session.exec(select_statement)
         return entities.all()
+
+    async def fetch_with_pagination_data(
+        self,
+        filters: CommonListFilters,
+    ) -> ListResponse[Model]:
+        limit = filters.limit
+        offset = filters.offset
+
+        select_statement = self.__form_select_statement(filters)
+        count_statement = self.__form_select_statement(filters, with_count=True)
+        total = (await self.__session.exec(count_statement)).one()
+        items = await self.__exec_select(
+            select_statement=select_statement, limit=limit, offset=offset
+        )
+
+        pages_num = math.ceil(total / limit)
+        page = (offset // limit) + 1
+
+        pagination_info = PaginationInfo(total=total, page=page, pages_num=pages_num)
+
+        return ListResponse(info=pagination_info, items=items)
+
+    async def fetch(
+        self,
+        filters: Optional[PydanticBaseModel] = None,
+        offset: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> Sequence[Model]:
+        select_statement = self.__form_select_statement(filters)
+        return await self.__exec_select(
+            select_statement=select_statement, limit=limit, offset=offset
+        )
 
     async def save(self, instance: Model) -> Model:
         self.__session.add(instance)

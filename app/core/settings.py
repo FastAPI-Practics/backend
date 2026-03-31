@@ -1,11 +1,31 @@
 from functools import lru_cache
 
-from pydantic import BaseModel, EmailStr, SecretStr
+from pydantic import BaseModel, EmailStr, SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class EmailSettings(BaseModel):
+    username: EmailStr
+    password: SecretStr
+    title: str
+    port: int = 587
+    server: str = 'smtp.gmail.com'
+    notification_lifetime_seconds: int = 3600
+
+
+class CommonSettings(BaseModel):
+    debug: bool = False
+    port: int = 8000
+
+    @computed_field
+    @property
+    def host(self) -> str:
+        if self.debug:
+            return f'http://localhost:{settings.common.port}'
+        return 'https://example.com'
+
+
 class RBACSettings(BaseModel):
-    admin_a: str = 'aa'
     admin_email: EmailStr = 'admin@admin.ru'
     admin_password: str = 'pass'
     admin_role: str = 'admin'
@@ -32,6 +52,8 @@ class Settings(BaseSettings):
     db: DbSettings
     auth: AuthSettings
     rbac: RBACSettings
+    common: CommonSettings
+    email: EmailSettings
 
     model_config = SettingsConfigDict(
         env_file='.env', env_nested_delimiter='__', extra='ignore', case_sensitive=False

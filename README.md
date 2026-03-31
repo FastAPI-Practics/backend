@@ -60,3 +60,7 @@ uv run alembic revision --autogenerate -m "<коментарий>"
 uv run pre-commit install
 ```
 
+```bash
+gunicorn app.main:app -c gunicorn_config.py --reload
+```
+
