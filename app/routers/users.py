@@ -10,6 +10,7 @@ from app.dependencies.services import UserServiceDep
 from app.models.pets import PetModel
 from app.models.users import UserPublic, UserUpdate
 from app.schemas.users import UserFilters
+from app.utils.pagination import ListResponse
 
 router = APIRouter(prefix='/users', tags=['users'], responses=auth_responses)
 
@@ -30,7 +31,7 @@ async def get_profile(
 async def get_users(
     user_service: UserServiceDep,
     filters: Annotated[UserFilters, Query()],
-) -> Sequence[UserPublic]:
+) -> ListResponse[UserPublic]:
     return await user_service.get_users(filters)
 
 

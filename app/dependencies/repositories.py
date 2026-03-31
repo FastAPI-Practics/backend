@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.dependencies.session import SessionDep
+from app.models.email import EmailNotification
 from app.models.permissions import Permission
 from app.models.pets import PetModel
 from app.models.refresh import RefreshSession
@@ -52,4 +53,14 @@ async def get_permission_repository(session: SessionDep):
 type PermissionRepository = Repository[Permission]
 PermissionRepositoryDep = Annotated[
     PermissionRepository, Depends(get_permission_repository)
+]
+
+
+async def get_email_notification_repository(session: SessionDep):
+    yield Repository[EmailNotification](session)
+
+
+type EmailNotificationRepository = Repository[EmailNotification]
+EmailNotificationRepositoryDep = Annotated[
+    EmailNotificationRepository, Depends(get_email_notification_repository)
 ]

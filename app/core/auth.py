@@ -14,13 +14,20 @@ from app.core.errors import (
 from app.core.security import AccessTokenDep
 from app.core.settings import settings
 from app.dependencies.services import (
+    EmailNotificationServiceDep,
     RefreshSessionServiceDep,
     RoleServiceDep,
     UserServiceDep,
 )
+from app.models.email import (
+    EmailAction,
+    EmailNotificationCreate,
+    EmailSendData,
+    EmailVerificationData,
+)
 from app.models.refresh import RefreshSession, RefreshSessionCreate
-from app.models.users import UserCreate, UserModel
-from app.schemas.auth import AuthTokenData
+from app.models.users import UserCreate, UserModel, UserStatus
+from app.schemas.auth import AuthTokenData, ChangePasswordData
 from app.services.refresh import RefreshSessionService
 from app.services.roles import RoleService
 from app.services.users import UserService
@@ -31,16 +38,19 @@ class Authenticator:
     __user_service: UserService
     __refresh_session_service: RefreshSessionService
     __role_service: RoleService
+    __email_service: EmailNotificationServiceDep
 
     def __init__(
         self,
         user_service: UserServiceDep,
         refresh_session_service: RefreshSessionServiceDep,
         role_service: RoleServiceDep,
+        email_service: EmailNotificationServiceDep,
     ):
         self.__user_service = user_service
         self.__refresh_session_service = refresh_session_service
         self.__role_service = role_service
+        self.__email_service = email_service
 
     async def __generate_tokens(self, user_id: UUID) -> Optional[AuthTokenData]:
         has_active_sessions = (
@@ -141,6 +151,9 @@ class Authenticator:
 
         user = await self.__user_service.get_user(user_id)
 
+        if user.status != UserStatus.CONFIRMED:
+            raise UnauthorizedError()
+
         if not security_scopes.scopes:
             return user
 
@@ -159,6 +172,8 @@ class Authenticator:
         password = auth_data.password
         if user is None:
             raise LoginError()
+        if user.status != UserStatus.CONFIRMED:
+            raise UnauthorizedError()
         if not Hasher.verify_password(password, user.password_hash):
             raise LoginError()
         return await self.__generate_tokens(user.id)
@@ -196,3 +211,81 @@ class Authenticator:
         user = await self.__user_service.create_user(user_create)
         user.role = public_role
         await self.__user_service.save_user(user)
+        await self.__email_service.send_notification(
+            EmailNotificationCreate(user_id=user.id, action=EmailAction.VERIFY_ACCOUNT),
+            EmailSendData(
+                subject='Account verification',
+                email_to=user.email,
+                body={
+                    'username': user.username,
+                    'path': f'/api/v1/auth/user/{user.id}/verify',
+                },
+                template_name='verification.html',
+            ),
+        )
+        return True
+
+    async def send_password_reset_notification(self, user_id: UUID) -> bool:
+        user = await self.__user_service.get_user(user_id)
+        if user is None:
+            return None
+        await self.__email_service.send_notification(
+            EmailNotificationCreate(
+                user_id=user.id, action=EmailAction.CHANGE_PASSWORD
+            ),
+            EmailSendData(
+                subject='Password reset',
+                email_to=user.email,
+                body={'username': user.username},
+                template_name='password_reset.html',
+            ),
+        )
+        return True
+
+    async def change_password(
+        self, user_id: UUID, change_data: ChangePasswordData
+    ) -> bool:
+        user = await self.__user_service.get_user(user_id)
+        if user is None:
+            return None
+        if user.status != UserStatus.CONFIRMED:
+            raise UnauthorizedError()
+        if not Hasher.verify_password(
+            change_data.old_password.get_secret_value(), user.password_hash
+        ):
+            raise LoginError()
+        notification = await self.__email_service.verify_notification(
+            EmailVerificationData(
+                user_id=user_id,
+                code=change_data.verification_code,
+            )
+        )
+        if notification is None:
+            return None
+        user.password_hash = Hasher.get_password_hash(
+            change_data.new_password.get_secret_value()
+        )
+        await self.__user_service.save_user(user)
+        user_active_session = (
+            await self.__refresh_session_service.get_active_user_session(user_id)
+        )
+        if user_active_session is not None:
+            user_active_session.is_invalidated = True
+            await self.__refresh_session_service.save_session(user_active_session)
+        return True
+
+    async def verify_account(self, user_id: UUID, verification_code: UUID) -> bool:
+        notification = await self.__email_service.verify_notification(
+            EmailVerificationData(
+                user_id=user_id,
+                code=verification_code,
+            )
+        )
+        if notification is None:
+            return None
+        user = await self.__user_service.get_user(user_id)
+        if user is None:
+            return None
+        user.status = UserStatus.CONFIRMED
+        await self.__user_service.save_user(user)
+        return True

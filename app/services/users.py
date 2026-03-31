@@ -6,6 +6,7 @@ from app.models.pets import PetModel
 from app.models.users import UserCreate, UserModel, UserUpdate
 from app.schemas.users import UserFilters
 from app.utils.hasher import Hasher
+from app.utils.pagination import ListResponse
 
 
 class UserService:
@@ -14,12 +15,8 @@ class UserService:
     def __init__(self, user_repository: UserRepositoryDep):
         self.__user_repository = user_repository
 
-    async def get_users(self, filters: UserFilters) -> Sequence[UserModel]:
-        return await self.__user_repository.fetch(
-            filters=filters,
-            offset=filters.offset,
-            limit=filters.limit,
-        )
+    async def get_users(self, filters: UserFilters) -> ListResponse[UserModel]:
+        return await self.__user_repository.fetch_with_pagination_data(filters)
 
     async def get_user_by_email(self, email: str) -> Optional[UserModel]:
         users = await self.__user_repository.fetch(
