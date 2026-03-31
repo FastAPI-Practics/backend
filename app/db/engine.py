@@ -15,4 +15,10 @@ def form_db_url() -> str:
     ).render_as_string(hide_password=False)
 
 
-engine = create_async_engine(form_db_url())
+engine = create_async_engine(
+    url=form_db_url(),
+    pool_size=10,  # Keep 10 connections
+    max_overflow=20,  # Allow 20 extra
+    pool_pre_ping=True,  # Verify connections
+    pool_recycle=3600,  # Recycle after 1 hour
+)

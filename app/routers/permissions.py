@@ -1,11 +1,13 @@
-from typing import Optional, Sequence
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Security
+from fastapi import APIRouter, Query, Security
 
 from app.core.responses import auth_responses
 from app.dependencies.auth import get_current_user
 from app.dependencies.services import PermissionServiceDep
 from app.models.permissions import PermissionCreate, PermissionPublic
+from app.schemas.permissions import PermissionFilters
+from app.utils.pagination import ListResponse
 
 router = APIRouter(prefix='/permissions', tags=['permission'], responses=auth_responses)
 
@@ -15,8 +17,9 @@ router = APIRouter(prefix='/permissions', tags=['permission'], responses=auth_re
 )
 async def get_permissions(
     permission_service: PermissionServiceDep,
-) -> Sequence[PermissionPublic]:
-    return await permission_service.get_permissions()
+    filters: Annotated[PermissionFilters, Query()],
+) -> ListResponse[PermissionPublic]:
+    return await permission_service.get_permissions(filters)
 
 
 @router.post(

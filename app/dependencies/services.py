@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi.params import Depends
 
+from app.services.email import EmailNotificationService
 from app.services.permissions import PermissionService
 from app.services.refresh import RefreshSessionService
 from app.services.roles import RoleService
@@ -16,3 +17,7 @@ RefreshSessionServiceDep = Annotated[
 PermissionServiceDep = Annotated[PermissionService, Depends(PermissionService)]
 
 RoleServiceDep = Annotated[RoleService, Depends(RoleService)]
+
+EmailNotificationServiceDep = Annotated[
+    EmailNotificationService, Depends(EmailNotificationService)
+]

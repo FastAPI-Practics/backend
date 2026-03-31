@@ -4,7 +4,7 @@ from app.core.rbac import INITIAL_ACTIONS, INITIAL_PERMISSION_SCHEMA, INITIAL_SU
 from app.core.settings import settings
 from app.models.permissions import PermissionCreate
 from app.models.roles import RoleCreate
-from app.models.users import UserCreate
+from app.models.users import UserCreate, UserStatus
 from app.services.permissions import PermissionService
 from app.services.roles import RoleService
 from app.services.users import UserService
@@ -28,30 +28,38 @@ class Bootstraper:
     async def bootstrap_app(self):
         admin_role_data = RoleCreate(name=settings.rbac.admin_role)
 
-        permission_cartesian_product = product(INITIAL_SUBJECTS, INITIAL_ACTIONS)
-        for subject, action in permission_cartesian_product:
-            await self.__permission_service.create_permission_if_not_exists(
-                PermissionCreate(subject=subject, action=action)
-            )
-            scope = f'{subject}:{action}'
-            admin_role_data.scope_aliases.append(scope)
+        initial_scopes = [
+            f'{subject}:{action}'
+            for subject, action in product(INITIAL_SUBJECTS, INITIAL_ACTIONS)
+        ]
 
-        admin_permissions = INITIAL_PERMISSION_SCHEMA.pop(settings.rbac.admin_role, [])
-        admin_permissions.remove('*')
-        for scope in admin_permissions:
+        permission_scopes = [*initial_scopes]
+        for scopes in INITIAL_PERMISSION_SCHEMA.values():
+            permission_scopes.extend(scopes)
+
+        permission_scopes = list(set(permission_scopes))
+        permission_scopes.remove('*')
+        for scope in permission_scopes:
             subject, action = scope.split(':')
             await self.__permission_service.create_permission_if_not_exists(
                 PermissionCreate(subject=subject, action=action)
             )
-            admin_role_data.scope_aliases.append(scope)
+
+        admin_role_data.scope_aliases = permission_scopes
+
+        for role, scopes in INITIAL_PERMISSION_SCHEMA.items():
+            if role == settings.rbac.admin_role:
+                continue
+            role_create_data = RoleCreate(name=role, scope_aliases=scopes)
+            await self.__role_service.create_role_if_not_exists(role_create_data)
 
         admin_role = await self.__role_service.create_role_if_not_exists(
             admin_role_data
         )
 
         admin_user_data = UserCreate(
-            first_name='',
-            last_name='',
+            first_name='admin',
+            last_name='admin',
             email=settings.rbac.admin_email,
             username='admin',
             password=settings.rbac.admin_password,
@@ -61,13 +69,5 @@ class Bootstraper:
             admin_user_data
         )
         admin_user.role_id = admin_role.id
+        admin_user.status = UserStatus.CONFIRMED
         await self.__user_service.save_user(admin_user)
-
-        for role, scopes in INITIAL_PERMISSION_SCHEMA.items():
-            for scope in scopes:
-                subject, action = scope.split(':')
-                await self.__permission_service.create_permission_if_not_exists(
-                    PermissionCreate(subject=subject, action=action)
-                )
-            role_create_data = RoleCreate(name=role, scope_aliases=scopes)
-            await self.__role_service.create_role_if_not_exists(role_create_data)

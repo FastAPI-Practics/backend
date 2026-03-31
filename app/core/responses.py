@@ -1,4 +1,4 @@
-from app.schemas.responses import (
+from app.schemas.errors import (
     ForbiddenErrorSchema,
     InternalServerErrorSchema,
     LoginErrorSchema,
