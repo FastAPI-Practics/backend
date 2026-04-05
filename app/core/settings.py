@@ -15,13 +15,12 @@ class EmailSettings(BaseModel):
 
 class CommonSettings(BaseModel):
     debug: bool = False
-    port: int = 8000
 
     @computed_field
     @property
     def host(self) -> str:
         if self.debug:
-            return f'http://localhost:{settings.common.port}'
+            return 'http://localhost:8000'
         return 'https://example.com'
 
 
