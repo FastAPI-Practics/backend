@@ -10,7 +10,7 @@ from app.core.error_handlers import exception_handler
 from app.core.middlewares import request_logging_middleware
 from app.core.responses import common_responses
 from app.core.settings import settings
-from app.routers import auth, permissions, pets, roles, users
+from app.routers import auth, health, permissions, pets, roles, users
 
 limiter = Limiter(key_func=get_remote_address, default_limits=['10/minute'])
 
@@ -36,6 +36,7 @@ app_router.include_router(pets.router)
 app_router.include_router(auth.router)
 app_router.include_router(permissions.router)
 app_router.include_router(roles.router)
+app_router.include_router(health.router)
 
 app.include_router(app_router)
 app.middleware('http')(request_logging_middleware)
