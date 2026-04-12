@@ -4,6 +4,7 @@
   vars:
     env_path: "{{ lookup('env', 'ENV', default='../../src/.env') }}"
     back_image: "{{ lookup('env', 'DOCKER_IMAGE_WITH_TAG') }}"
+    front_image: nginx:stable-alpine
     compose_path: ./compose.yaml
   tasks:
     - name: Copy .env file
