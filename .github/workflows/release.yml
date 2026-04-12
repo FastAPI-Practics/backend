@@ -56,7 +56,7 @@ jobs:
         chmod 600 ~/.ssh/id_ed25519
     - name: Create inventory
       run: |
-        cat > ansible/hosts.ini << EOF
+        cat > ansible/inventory.ini << EOF
         [vms]
         ${{ secrets.VM_HOST }}
         EOF
@@ -64,8 +64,8 @@ jobs:
       run: |
         cd ansible
         ansible-playbook \
-          -i hosts.ini \
-          playbooks/test-playbook.yml
+          -i inventory.ini \
+          playbooks/test-playbook.yaml
       env:
         ANSIBLE_HOST_KEY_CHECKING: "false"
         ANSIBLE_FORCE_COLOR: "true"
