@@ -50,14 +50,14 @@ jobs:
       run: pipx install --include-deps ansible
     
     - name: Set up SSH
+      shell: bash
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY_B64 }}" | base64 -d | tr -d '\r' > ~/.ssh/id_ed25519
-        chmod 600 ~/.ssh/id_ed25519
-        echo "${{ secrets.SSH_PRIVATE_KEY_B64 }}" > ~/.ssh/known_hosts
-        chmod 644 ~/.ssh/known_hosts
-        eval "$(ssh-agent -s)"
-        ssh-add ~/.ssh/id_ed25519
+        eval `ssh-agent -s`
+        mkdir -p /home/runner/.ssh/
+        touch /home/runner/.ssh/id_rsa
+        echo -e "${{ secrets.SSH_PRIVATE_KEY }}" > /home/runner/.ssh/id_ed25519
+        chmod 700 /home/runner/.ssh/id_ed25519
+        echo -e "${{ secrets.SSH_KNOWN_HOSTS }}" >> /home/runner/.ssh/known_hosts
 
     - name: Create inventory
       run: |
