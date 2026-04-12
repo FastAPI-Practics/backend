@@ -56,7 +56,8 @@ jobs:
         chmod 600 ~/.ssh/id_ed25519
     - name: Create inventory
       run: |
-        cat > ansible/inventory/hosts.ini << EOF
+        mkdir -p /etc/ansible
+        cat > /etc/ansible/hosts << EOF
         [vms]
         ${{ secrets.VM_HOST }}
         EOF
