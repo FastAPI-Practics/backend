@@ -10,7 +10,7 @@ jobs:
   init:
     runs-on: ubuntu-latest
     steps:
-    - uses: FastAPI-Practics/backend/.github/actions/ansible-setup/action.yml@ci-cd-2
+    - uses: FastAPI-Practics/backend/.github/actions/ansible-setup@ci-cd-2
       with:
         ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY_B64 }}
         known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
