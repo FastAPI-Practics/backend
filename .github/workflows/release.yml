@@ -54,9 +54,10 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY_B64 }}" | base64 -d | tr -d '\r' > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
-        ssh-add ~/.ssh/id_ed25519
         echo "${{ secrets.SSH_PRIVATE_KEY_B64 }}" > ~/.ssh/known_hosts
         chmod 644 ~/.ssh/known_hosts
+        eval "$(ssh-agent -s)"
+        ssh-add ~/.ssh/id_ed25519
 
     - name: Create inventory
       run: |
