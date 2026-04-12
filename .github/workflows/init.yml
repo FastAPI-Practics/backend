@@ -9,7 +9,6 @@ permissions:
 jobs:
   init:
     runs-on: ubuntu-latest
-    needs: setup
     steps:
     - uses: FastAPI-Practics/backend/.github/actions/ansible-setup/action.yml@ci-cd-2
       with:
