@@ -72,7 +72,7 @@ jobs:
     - name: Run playbook
       run: |
         cd ansible
-        ANSIBLE_CONFIG=ansible.cfg ansible-playbook \
+        ansible-playbook \
           -i inventory.ini \
           -u ${{ secrets.VM_USER }} \
           playbooks/test-playbook.yaml
