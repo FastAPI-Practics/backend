@@ -23,3 +23,12 @@ jobs:
           -i inventory.ini \
           -u ${{ secrets.VM_USER }} \
           playbooks/init-vm-playbook.yaml
+      env:
+        ANSIBLE_HOST_KEY_CHECKING: "false"
+        ANSIBLE_FORCE_COLOR: "true"
+    
+    - name: Cleanup Workspace
+      if: always()
+      run: |
+        rm -rf ~/.ssh/
+        rm ~/.env
