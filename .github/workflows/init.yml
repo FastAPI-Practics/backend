@@ -22,4 +22,4 @@ jobs:
         ansible-playbook \
           -i inventory.ini \
           -u ${{ secrets.VM_USER }} \
-          playbooks/setup-vm-playbook.yaml
+          playbooks/init-vm-playbook.yaml
