@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   setup:
-    uses: FastAPI-Practics/backend/.github/workflows/reusable-workflow.yml@ci-cd-2
+    uses: FastAPI-Practics/backend/.github/workflows/reusable.yml@ci-cd-2
     secrets: inherit
   init:
     runs-on: ubuntu-latest
