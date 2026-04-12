@@ -1,0 +1,23 @@
+name: Init VM
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    uses: FastAPI-Practics/backend/.github/workflows/reusable-workflow.yml@ci-cd-2
+    secrets: inherit
+  init:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+    - name: Setup VM
+      run: |
+        cd ansible
+        ansible-playbook \
+          -i inventory.ini \
+          -u ${{ secrets.VM_USER }} \
+          playbooks/setup-vm-playbook.yaml
