@@ -3,6 +3,7 @@
   become: true
   vars:
     env_path: "{{ lookup('env', 'ENV', default='../../src/.env') }}"
+    back_image: "{{ lookup('env', 'DOCKER_IMAGE_WITH_TAG') }}"
     compose_path: ./compose.yaml
   tasks:
     - name: Copy .env file

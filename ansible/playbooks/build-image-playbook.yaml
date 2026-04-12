@@ -2,10 +2,10 @@
   hosts: vms
   become: true
   vars:
-    docker_user: "{{ lookup('ansible.builtin.env', 'DOCKER_USER') }}"
-    image_name: "{{ docker_user }}/{{ lookup('ansible.builtin.env', 'DOCKER_IMAGE_NAME') }}"
-    image_tag: "{{ lookup('ansible.builtin.env', 'CI_COMMIT_TAG') }}"
-    docker_pass: "{{ lookup('ansible.builtin.env', 'DOCKER_TOKEN') }}"
+    docker_user: "{{ lookup('env', 'DOCKER_USER') }}"
+    image_name: "{{ docker_user }}/{{ lookup('env', 'DOCKER_IMAGE_NAME') }}"
+    image_tag: "{{ lookup('env', 'CI_COMMIT_TAG') }}"
+    docker_pass: "{{ lookup('env', 'DOCKER_TOKEN') }}"
   tasks:
     - name: Copy source code
       ansible.posix.synchronize:
