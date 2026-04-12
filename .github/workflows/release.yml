@@ -83,3 +83,19 @@ jobs:
         DOCKER_IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME }}
         CI_COMMIT_TAG: ${{ needs.release.outputs.new_release_version }}-github
         DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+    
+    - name: Create .env file
+      run: echo "${{ secrets.ENV }}" > ~/.env
+
+    - name: Update a compose
+      run: |
+        cd ansible
+        ansible-playbook \
+          -i inventory.ini \
+          -u ${{ secrets.VM_USER }} \
+          playbooks/update-compose-playbook.yaml
+      env:
+        ANSIBLE_HOST_KEY_CHECKING: "false"
+        ANSIBLE_FORCE_COLOR: "true"
+        ENV: ~/.env
+        DOCKER_IMAGE_WITH_TAG: ${{ vars.DOCKER_USER }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.release.outputs.new_release_version }}-github
