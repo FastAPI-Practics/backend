@@ -15,7 +15,7 @@
 
     - name: Copy nginx config
       ansible.builtin.copy:
-        src: ../../src/nginx
+        src: ../../src/nginx/
         dest: ./nginx
         mode: preserve
 
