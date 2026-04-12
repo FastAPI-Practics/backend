@@ -68,7 +68,7 @@ jobs:
     - name: Run playbook
       run: |
         cd ansible
-        ansible-playbook \
+        ANSIBLE_CONFIG=ansible.cfg ansible-playbook \
           -i inventory.ini \
           playbooks/test-playbook.yaml
       env:
