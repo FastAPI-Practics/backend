@@ -2,9 +2,10 @@
   hosts: vms
   become: true
   vars:
-    image_name: lamarr3/simple-fastapi
-    image_tag: v2-test
-    docker_pass: "{{ lookup('ansible.builtin.env', 'DOCKER_PASS') }}"
+    docker_user: "{{ lookup('ansible.builtin.env', 'DOCKER_USER') }}"
+    image_name: "{{ docker_user }}/{{ lookup('ansible.builtin.env', 'DOCKER_IMAGE_NAME') }}"
+    image_tag: "{{ lookup('ansible.builtin.env', 'CI_COMMIT_TAG') }}"
+    docker_pass: "{{ lookup('ansible.builtin.env', 'DOCKER_TOKEN') }}"
   tasks:
     - name: Copy source code
       ansible.posix.synchronize:
@@ -24,7 +25,7 @@
 
     - name: Login to registry
       community.docker.docker_login:
-        username: lamarr3
+        username: "{{ docker_user }}"
         password: "{{ docker_pass }}"
         reauthorize: true
 
