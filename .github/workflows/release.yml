@@ -79,7 +79,7 @@ jobs:
       env:
         ANSIBLE_HOST_KEY_CHECKING: "false"
         ANSIBLE_FORCE_COLOR: "true"
-        DOCKER_USER: ${{ secrets.DOCKER_USER }}
-        DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}
+        DOCKER_USER: ${{ vars.DOCKER_USER }}
+        DOCKER_IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME }}
         CI_COMMIT_TAG: ${{ needs.release.outputs.new_release_version }}-github
         DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
