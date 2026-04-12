@@ -85,7 +85,7 @@ jobs:
         DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
     
     - name: Create .env file
-      run: echo "${{ secrets.ENV }}" > ~/.env
+      run: echo -e "${{ secrets.ENV }}" > ~/.env
 
     - name: Update a compose
       run: |
