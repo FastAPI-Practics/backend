@@ -53,11 +53,11 @@ jobs:
       shell: bash
       run: |
         eval `ssh-agent -s`
-        mkdir -p /home/runner/.ssh/
-        touch /home/runner/.ssh/id_rsa
-        echo -e "${{ secrets.SSH_PRIVATE_KEY }}" > /home/runner/.ssh/id_ed25519
-        chmod 700 /home/runner/.ssh/id_ed25519
-        echo -e "${{ secrets.SSH_KNOWN_HOSTS }}" >> /home/runner/.ssh/known_hosts
+        mkdir -p ~/.ssh/
+        touch ~/.ssh/id_ed25519
+        echo -e "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+        chmod 700 ~/.ssh/id_ed25519
+        echo -e "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
 
     - name: Create inventory
       run: |
