@@ -70,6 +70,7 @@ jobs:
         cd ansible
         ANSIBLE_CONFIG=ansible.cfg ansible-playbook \
           -i inventory.ini \
+          -u ${{ secrets.VM_USER }} \
           playbooks/test-playbook.yaml
       env:
         ANSIBLE_HOST_KEY_CHECKING: "false"
