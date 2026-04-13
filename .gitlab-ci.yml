@@ -28,9 +28,10 @@ create_tag:
 - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
 
 .ansible_setup: &ansible_setup
-  image: lamarr3/ansible-setup:1.0.5
+  image: lamarr3/ansible-setup:1.0.6
   before_script:
   - *ssh_setup
+  - ansible-galaxy collection install -r requirements.yml
   - mkdir -p /etc/ansible
   - echo -e "[vms]\n$VM_HOST" > /etc/ansible/hosts
   after_script:
