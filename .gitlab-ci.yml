@@ -1,4 +1,5 @@
 stages:
+- lint
 - release
 - build
 - deploy
@@ -20,6 +21,7 @@ create_tag:
     - when: always
 
 .ssh_setup: &ssh_setup
+- apt-get update && apt-get install -y openssh-client
 - mkdir -p ~/.ssh
 - touch ~/.ssh/id_ed25519
 - eval "$(ssh-agent -s)"
@@ -28,7 +30,7 @@ create_tag:
 - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
 
 .ansible_install: &ansible_install
-- apt-get update && apt-get install -y openssh-client
+- apt-get update
 - apt update -y
 - apt install rsync -y
 - python3 -m pip install --user pipx
@@ -37,8 +39,10 @@ create_tag:
 - pipx install --include-deps ansible ansible-lint
 - ansible-galaxy collection install -r requirements.yml
 
+.ansible_image: &ansible_image python:3.14-slim
+
 .ansible_setup: &ansible_setup
-  image: python:3.14-slim
+  image: *ansible_image
   before_script:
   - *ssh_setup
   - *ansible_install
@@ -47,6 +51,23 @@ create_tag:
   after_script:
   - rm -rf ~/.ssh
   - rm -rf /etc/ansible
+
+lint_playbooks:
+  image: *ansible_image
+  stage: lint
+  before_script:
+  - *ansible_install
+  rules:
+  - if: $CI_COMMIT_BRANCH
+    changes:
+      compare_to: 'refs/heads/main'
+      paths:
+        - ansible/playbooks/*
+  script:
+  - ansible-lint ansible/playbooks
+  after_script:
+  - rm -rf ~/.ssh
+
 
 init_vm:
   <<: *ansible_setup
