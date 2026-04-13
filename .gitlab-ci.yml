@@ -1,0 +1,10 @@
+stages:
+- release
+
+hello_world:
+  image: ubuntu:latest
+  stage: release
+  script:
+    - echo "Hello, GitLab CI!"
+  rules:
+    - when: always
