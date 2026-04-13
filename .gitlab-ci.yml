@@ -5,7 +5,7 @@ stages:
 cache:
   key: $CI_COMMIT_REF_SLUG
   paths:
-    - .npm/
+    - ~/.npm/
 
 create_tag:
   image: node:latest
@@ -19,19 +19,9 @@ create_tag:
     - when: always
 
 test_ansible:
-  image: python:3.14-slim
+  image: lamarr3/ansible-setup
   stage: deploy
-  variables:
-    DOCKER_IMAGE: $DOCKER_USER/$DOCKER_IMAGE_NAME
-    DOCKER_IMAGE_WITH_TAG: $DOCKER_USER/$DOCKER_IMAGE_NAME:$CI_COMMIT_TAG
   before_script:
-  - apt-get update && apt-get install -y openssh-client
-  - apt update -y
-  - apt install rsync -y
-  - python3 -m pip install --user pipx
-  - python3 -m pipx ensurepath
-  - export PATH="${PATH}:$(python3 -c 'import site; print(site.USER_BASE)')/bin"
-  - pipx install --include-deps ansible ansible-lint
   - mkdir -p ~/.ssh
   - touch ~/.ssh/id_ed25519
   - eval "$(ssh-agent -s)"
