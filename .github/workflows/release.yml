@@ -28,6 +28,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: "lts/*"
+        cache: 'npm'
     
     - name: Run semantic-release
       id: semantic_release

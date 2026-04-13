@@ -16,6 +16,9 @@ inputs:
     description: 'VM username'
     required: true
  
+permissions:
+  contents: read
+
 runs:
   using: 'composite'
   steps:
@@ -26,6 +29,7 @@ runs:
     uses: actions/setup-python@v5
     with:
       python-version: '3.13'
+      cache: 'pip'
   
   - name: Install Ansible
     shell: bash
