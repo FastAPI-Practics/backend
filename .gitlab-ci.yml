@@ -1,5 +1,6 @@
 stages:
 - release
+- build
 - deploy
 
 cache:
@@ -18,22 +19,47 @@ create_tag:
       when: never
     - when: always
 
-test_ansible:
+ssh_setup: &ssh_setup
+- mkdir -p ~/.ssh
+- touch ~/.ssh/id_ed25519
+- eval "$(ssh-agent -s)"
+- cat $SSH_PRIVATE_KEY_B64 | base64 -d | tr -d '\r' > ~/.ssh/id_ed25519
+- chmod 700 ~/.ssh/id_ed25519
+- cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
+
+ansible_setup: &ansible_setup
   image: lamarr3/ansible-setup:1.0.1
-  stage: deploy
   before_script:
-  - mkdir -p ~/.ssh
-  - touch ~/.ssh/id_ed25519
-  - eval "$(ssh-agent -s)"
-  - cat $SSH_PRIVATE_KEY_B64 | base64 -d | tr -d '\r' > ~/.ssh/id_ed25519
-  - chmod 700 ~/.ssh/id_ed25519
-  - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
+  - *ssh_setup
   - mkdir -p /etc/ansible
   - echo -e "[vms]\n$VM_HOST" > /etc/ansible/hosts
-  script:
-  - ansible-playbook ansible/playbooks/test-playbook.yaml -u $VM_USER
-  rules:
-  - if: '$CI_COMMIT_TAG'
   after_script:
   - rm -rf ~/.ssh
   - rm -rf /etc/ansible
+
+init_vm:
+  <<: *ansible_setup
+  stage: release
+  script:
+  - ansible-playbook ansible/playbooks/init-vm-playbook.yaml -u $VM_USER
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - when: manual
+
+build_image:
+  <<: *ansible_setup
+  stage: build
+  script:
+  - ansible-playbook ansible/playbooks/build-image-playbook.yaml -u $VM_USER
+  rules:
+  - if: '$CI_COMMIT_TAG'
+
+update_compose:
+  <<: *ansible_setup
+  stage: deploy
+  script:
+  - ansible-playbook ansible/playbooks/update-compose-playbook.yaml -u $VM_USER
+  rules:
+  - if: '$CI_COMMIT_TAG'
+
