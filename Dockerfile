@@ -21,6 +21,6 @@ RUN pip install --no-cache-dir \
     ansible==8.7.0 \
     jmespath
 
-COPY --from=builder /collections /root/.ansible/collections
+COPY --from=builder /collections ~/.ansible/collections
 
 WORKDIR /ansible
