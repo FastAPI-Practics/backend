@@ -73,6 +73,7 @@ jobs:
         ANSIBLE_HOST_KEY_CHECKING: "false"
         ANSIBLE_FORCE_COLOR: "true"
         ENV: ~/.env
+        DOMAIN: ${{ secrets.DOMAIN }}
         DOCKER_IMAGE_WITH_TAG: ${{ vars.DOCKER_USER }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.release.outputs.new_release_version }}-github
     
     - name: Cleanup Workspace
