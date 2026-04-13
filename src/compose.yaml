@@ -10,22 +10,27 @@ x-base: &base
   environment:
     DB__HOST: db
 
+x-db-base: &db-base
+  image: postgres:18
+  restart: always
+  env_file:
+    - .env
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+    start_period: 10s
+
 services:
   db:
-    image: postgres:18
-    restart: always
-    env_file:
-      - .env
+    <<: *db-base
     environment:
       POSTGRES_USER: ${DB__USER}
       POSTGRES_PASSWORD: ${DB__PASSWORD}
       POSTGRES_DB: ${DB__NAME}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+    volumes:
+      - pgdata:/var/lib/postgresql/18/docker
 
   alembic:
     <<: *base
@@ -65,6 +70,15 @@ services:
       api:
         condition: service_healthy
   
+  proxy_db:
+    <<: *db-base
+    environment:
+      POSTGRES_USER: ${DB__USER}
+      POSTGRES_PASSWORD: ${DB__PASSWORD}
+      POSTGRES_DB: proxy
+    volumes:
+      - proxy_pgdata:/var/lib/postgresql/18/docker
+
   proxy:
     image: 'jc21/nginx-proxy-manager:latest'
     restart: unless-stopped
@@ -76,11 +90,11 @@ services:
     - .env
     environment:
       TZ: "Russia/Moscow"
-      # DB_POSTGRES_HOST: 'db'
-      # DB_POSTGRES_PORT: '5432'
-      # DB_POSTGRES_USER: ${DB__USER}
-      # DB_POSTGRES_PASSWORD: ${DB__PASSWORD}
-      # DB_POSTGRES_NAME: ${DB__NAME}
+      DB_POSTGRES_HOST: 'proxy_db'
+      DB_POSTGRES_PORT: '5432'
+      DB_POSTGRES_USER: ${DB__USER}
+      DB_POSTGRES_PASSWORD: ${DB__PASSWORD}
+      DB_POSTGRES_NAME: proxy
       INITIAL_ADMIN_EMAIL: ${PROXY__ADMIN_EMAIL}
       INITIAL_ADMIN_PASSWORD: ${PROXY__ADMIN_PASSWORD}
     volumes:
@@ -89,5 +103,6 @@ services:
 
 volumes:
   pgdata:
+  proxy_pgdata:
   proxy_data:
   certificates:
