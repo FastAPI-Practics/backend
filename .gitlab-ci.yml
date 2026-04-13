@@ -27,11 +27,21 @@ create_tag:
 - chmod 700 ~/.ssh/id_ed25519
 - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
 
+.ansible_install: &ansible_install
+- apt-get update && apt-get install -y openssh-client
+- apt update -y
+- apt install rsync -y
+- python3 -m pip install --user pipx
+- python3 -m pipx ensurepath
+- export PATH="${PATH}:$(python3 -c 'import site; print(site.USER_BASE)')/bin"
+- pipx install --include-deps ansible ansible-lint
+- ansible-galaxy collection install -r requirements.yml
+
 .ansible_setup: &ansible_setup
-  image: lamarr3/ansible-setup:1.0.6
+  image: python:3.14-slim
   before_script:
   - *ssh_setup
-  - ansible-galaxy collection install -r requirements.yml
+  - *ansible_install
   - mkdir -p /etc/ansible
   - echo -e "[vms]\n$VM_HOST" > /etc/ansible/hosts
   after_script:
