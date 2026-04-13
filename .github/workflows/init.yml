@@ -15,7 +15,6 @@ jobs:
         ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY_B64 }}
         known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
         vm_host: ${{ secrets.VM_HOST }}
-        vm_user: ${{ secrets.VM_USER }}
 
     - name: Setup VM
       run: |
