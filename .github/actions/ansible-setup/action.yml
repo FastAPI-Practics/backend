@@ -12,12 +12,6 @@ inputs:
   vm_host:
     description: 'VM address'
     required: true
-  vn_user:
-    description: 'VM username'
-    required: true
- 
-permissions:
-  contents: read
 
 runs:
   using: 'composite'
@@ -67,4 +61,4 @@ runs:
   - name: Lint playbooks
     shell: bash
     if: steps.changed-files.outputs.any_changed == 'true'
-    run: ansible-lint -u ${{ inputs.vm_user }}
+    run: ansible-lint ansible/playbooks
