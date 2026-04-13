@@ -20,6 +20,10 @@ create_tag:
       when: never
     - when: always
 
+variables:
+  ANSIBLE_HOST_KEY_CHECKING: "false"
+  ANSIBLE_FORCE_COLOR: "true"
+
 .ssh_setup: &ssh_setup
 - apt-get update && apt-get install -y openssh-client
 - mkdir -p ~/.ssh
@@ -90,6 +94,8 @@ build_image:
 update_compose:
   <<: *ansible_setup
   stage: deploy
+  variables:
+    DOCKER_IMAGE_WITH_TAG: $DOCKER_USER/$DOCKER_IMAGE_NAME:$CI_COMMIT_TAG
   script:
   - ansible-playbook ansible/playbooks/update-compose-playbook.yaml -u $VM_USER
   rules:
