@@ -1,7 +1,7 @@
 {
   "release": {
     "branches": ["main", "ci-cd-2"],
-    "tagFormat": "v${version}-test",
+    "tagFormat": "v${version}-test-gitlab",
     "plugins": [
         "@semantic-release/commit-analyzer",
         "@semantic-release/release-notes-generator",
