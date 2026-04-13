@@ -1,10 +1,18 @@
 stages:
 - release
 
-hello_world:
-  image: ubuntu:latest
+cache:
+  key: $CI_COMMIT_REF_SLUG
+  paths:
+    - .npm/
+
+create_tag:
+  image: node:bookworm-slim
   stage: release
   script:
-    - echo "Hello, GitLab CI!"
+    - npm i @semantic-release/gitlab
+    - npx semantic-release
   rules:
+    - if: '$CI_COMMIT_TAG'
+      when: never
     - when: always
