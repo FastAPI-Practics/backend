@@ -7,7 +7,7 @@ cache:
     - .npm/
 
 create_tag:
-  image: node:bookworm-slim
+  image: node:latest
   stage: release
   script:
     - npm i @semantic-release/gitlab
