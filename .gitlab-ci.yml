@@ -1,5 +1,6 @@
 stages:
 - release
+- deploy
 
 cache:
   key: $CI_COMMIT_REF_SLUG
@@ -16,3 +17,34 @@ create_tag:
     - if: '$CI_COMMIT_TAG'
       when: never
     - when: always
+
+test_ansible:
+  image: python:3.14-slim
+  variables:
+    DOCKER_IMAGE: $DOCKER_USER/$DOCKER_IMAGE_NAME
+    DOCKER_IMAGE_WITH_TAG: $DOCKER_USER/$DOCKER_IMAGE_NAME:$CI_COMMIT_TAG
+  before_script:
+  - apt-get update && apt-get install -y openssh-client
+  - apt update -y
+  - apt install rsync -y
+  - python3 -m pip install --user pipx
+  - python3 -m pipx ensurepath
+  - export PATH="${PATH}:$(python3 -c 'import site; print(site.USER_BASE)')/bin"
+  - pipx install --include-deps ansible ansible-lint
+  - mkdir -p ~/.ssh
+  - touch ~/.ssh/id_ed25519
+  - eval "$(ssh-agent -s)"
+  - cat $SSH_PRIVATE_KEY_B64 | base64 -d | tr -d '\r' > ~/.ssh/id_ed25519
+  - chmod 700 ~/.ssh/id_ed25519
+  - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
+  - mkdir -p /etc/ansible
+  - echo -e "[vms]\n$VM_HOST" > /etc/ansible/hosts
+  script:
+  - ansible-playbook ansible/playbooks/test-playbook.yaml -u $VM_USER
+  rules:
+  - if: '$CI_COMMIT_TAG'
+    when: never
+  - when: manual
+  after_script:
+  - rm -rf ~/.ssh
+  - rm -rf /etc/ansible
