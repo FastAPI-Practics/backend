@@ -20,6 +20,7 @@ create_tag:
 
 test_ansible:
   image: python:3.14-slim
+  stage: deploy
   variables:
     DOCKER_IMAGE: $DOCKER_USER/$DOCKER_IMAGE_NAME
     DOCKER_IMAGE_WITH_TAG: $DOCKER_USER/$DOCKER_IMAGE_NAME:$CI_COMMIT_TAG
