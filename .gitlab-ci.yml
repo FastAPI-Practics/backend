@@ -28,7 +28,7 @@ create_tag:
 - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
 
 .ansible_setup: &ansible_setup
-  image: lamarr3/ansible-setup:1.0.3
+  image: lamarr3/ansible-setup:1.0.5
   before_script:
   - *ssh_setup
   - mkdir -p /etc/ansible
