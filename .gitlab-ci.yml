@@ -19,7 +19,7 @@ create_tag:
     - when: always
 
 test_ansible:
-  image: lamarr3/ansible-setup
+  image: lamarr3/ansible-setup:1.0.1
   stage: deploy
   before_script:
   - mkdir -p ~/.ssh

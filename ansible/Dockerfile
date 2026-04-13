@@ -1,9 +1,26 @@
-FROM python:3.14.4-slim-bookworm
+FROM python:3.14.4-slim-bookworm AS base
+FROM base AS builder
 
-RUN apt-get update && apt-get install -y openssh-client && \
-    apt update -y && \
-    apt install rsync -y && \
-    python3 -m pip install --user pipx && \
-    python3 -m pipx ensurepath && \
-    export PATH="${PATH}:$(python3 -c 'import site; print(site.USER_BASE)')/bin" && \
-    pipx install --include-deps ansible ansible-lint
+RUN pip install --no-cache-dir ansible==8.7.0
+
+COPY requirements.yml /tmp/requirements.yml
+RUN ansible-galaxy collection install -r /tmp/requirements.yml -p /collections
+
+FROM base
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    openssh-client \
+    git \
+    rsync \
+    jq \
+    sshpass \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+    ansible==8.7.0 \
+    jmespath
+
+COPY --from=builder /collections /root/.ansible/collections
+
+WORKDIR /ansible
