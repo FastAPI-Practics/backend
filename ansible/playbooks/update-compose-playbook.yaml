@@ -5,6 +5,7 @@
     env_path: "{{ lookup('env', 'ENV', default='../../src/.env') }}"
     back_image: "{{ lookup('env', 'DOCKER_IMAGE_WITH_TAG') }}"
     front_image: nginx:stable-alpine
+    server_name: "{{ lookup('env', 'DOMAIN', default='localhost') }}"
     compose_path: ./compose.yaml
   tasks:
     - name: Copy .env file
@@ -13,10 +14,15 @@
         dest: ./.env
         mode: preserve
 
-    - name: Copy nginx config
-      ansible.builtin.copy:
-        src: ../../src/nginx/
-        dest: ./nginx
+    - name: Creates nginx directory
+      ansible.builtin.file:
+        path: ./nginx
+        state: directory
+
+    - name: Template nginx config
+      ansible.builtin.template:
+        src: ../nginx.conf.j2
+        dest: ./nginx/nginx.conf
         mode: preserve
 
     - name: Check if compose file exists
