@@ -18,6 +18,9 @@
       ansible.builtin.file:
         path: ./nginx
         state: directory
+        owner: root
+        group: root
+        mode: '444'
 
     - name: Template nginx config
       ansible.builtin.template:
