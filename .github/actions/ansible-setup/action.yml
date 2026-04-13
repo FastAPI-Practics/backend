@@ -12,6 +12,9 @@ inputs:
   vm_host:
     description: 'VM address'
     required: true
+  vn_user:
+    description: 'VM username'
+    required: true
  
 runs:
   using: 'composite'
@@ -49,3 +52,14 @@ runs:
       [vms]
       ${{ inputs.vm_host }}
       EOF
+
+  - name: Get changed files
+    id: changed-files
+    uses: tj-actions/changed-files
+    with:
+      files: |
+        ansible/playbooks/**
+  
+  - name: Lint playbooks
+    if: steps.changed-files.outputs.any_changed == 'true'
+    run: ansible-lint -u ${{ inputs.vm_user }}
