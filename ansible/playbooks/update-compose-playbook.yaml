@@ -16,12 +16,12 @@
 
     - name: Copy html dir
       ansible.posix.synchronize:
-        src: ../../src/html
-        dest: ./html
+        src: ../../src/html/
+        dest: ./html/
 
     - name: Creates nginx directory
       ansible.builtin.file:
-        path: ./nginx
+        path: ./nginx/
         state: directory
         mode: '444'
 
