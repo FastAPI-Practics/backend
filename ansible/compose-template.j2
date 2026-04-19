@@ -97,7 +97,7 @@ services:
       INITIAL_ADMIN_PASSWORD: ${PROXY__ADMIN_PASSWORD}
     volumes:
       - proxy_data:/data
-      - certificates:/etx/letsencrypt
+      - certificates:/etc/letsencrypt
 
 volumes:
   pgdata:
