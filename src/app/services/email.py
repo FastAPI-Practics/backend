@@ -19,7 +19,7 @@ from app.models.email import (
 
 class EmailNotificationService:
     __email_notification_repository: EmailNotificationRepository
-    __fast_mail: FastMail
+    __fast_mail: Optional[FastMail] = None
     __background_tasks: BackgroundTasks
 
     def __init__(
@@ -40,7 +40,8 @@ class EmailNotificationService:
             TEMPLATE_FOLDER='./app/templates',
         )
         self.__background_tasks = background_tasks
-        self.__fast_mail = FastMail(conf)
+        if not settings.common.debug:
+            self.__fast_mail = FastMail(conf)
 
     def send_email(self, email_data: EmailSendData):
         message = MessageSchema(
@@ -49,11 +50,12 @@ class EmailNotificationService:
             template_body=email_data.body,
             subtype='html',
         )
-        self.__background_tasks.add_task(
-            self.__fast_mail.send_message,
-            message,
-            template_name=email_data.template_name,
-        )
+        if self.__fast_mail is not None:
+            self.__background_tasks.add_task(
+                self.__fast_mail.send_message,
+                message,
+                template_name=email_data.template_name,
+            )
 
     async def send_notification(
         self, create_data: EmailNotificationCreate, email_data: EmailSendData

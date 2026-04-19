@@ -64,3 +64,8 @@ uv run pre-commit install
 gunicorn app.main:app -c gunicorn_config.py --reload
 ```
 
+## Запуск тестов
+uv run python3 test_db_init.py 2> /dev/null
+uv run python3 test_db_init.py
+uv run coverage run -m pytest
+uv run coverage html && open htmlcov/index.html
