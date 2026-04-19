@@ -7,16 +7,13 @@ on:
 
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
-      id-token: write
-    
     outputs:
       new_release_version: ${{ steps.semantic_release.outputs.new_release_version }}
 
