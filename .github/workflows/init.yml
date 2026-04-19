@@ -16,7 +16,7 @@ jobs:
         known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
         vm_host: ${{ secrets.VM_HOST }}
     
-    - name: Setup VN
+    - name: Setup VM
       run: |
         cd ansible
         ansible-playbook \
@@ -26,3 +26,9 @@ jobs:
       env:
         ANSIBLE_FORCE_COLOR: "true"
         ANSIBLE_HOST_KEY_CHECKING: "false"
+    
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -rf ~/.ssh/
+        rm ~/.env
