@@ -1,4 +1,5 @@
 name: Init VM
+
 on:
   workflow_dispatch:
 
@@ -6,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  init:
+  init-jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: FastAPI-Practics/backend/.github/actions/ansible-setup@ci-cd-branch
