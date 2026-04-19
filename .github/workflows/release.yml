@@ -7,33 +7,29 @@ on:
 
 permissions:
   contents: read
-  issues: write
-  pull-requests: write
-  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      new_release_version: ${{ steps.semantic_release.outputs.new_release_version }}
     permissions:
-      contents: read
+      contents: write
       issues: write
       pull-requests: write
       id-token: write
-    
-    outputs:
-      new_release_version: ${{ steps.semantic_release.outputs.new_release_version }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Set up Nodejs
-        uses: actions/setup-node@v4
-        with:
-          node-version: "lts/*"
-      
-      - name: Run semantic-release
-        id: semantic_release
-        uses: cycjimmy/semantic-release-action@v6
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Nodejs
+      uses: actions/setup-node@v4
+      with:
+        node-version: "lts/*"
+    
+    - name: Run semantic-release
+      id: semantic_release
+      uses: cycjimmy/semantic-release-action@v6
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
