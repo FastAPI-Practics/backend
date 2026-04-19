@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -40,10 +41,10 @@ class AuthSettings(BaseModel):
 
 class DbSettings(BaseModel):
     driver: str = 'postgresql+asyncpg'
-    host: str = 'localhost'
-    user: str = 'postgres'
-    password: str = 'pass'
-    port: int = 5432
+    host: Optional[str] = None
+    user: Optional[str] = None
+    password: Optional[str] = None
+    port: Optional[int] = None
     name: str = 'db'
 
 
