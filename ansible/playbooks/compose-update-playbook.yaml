@@ -2,7 +2,7 @@
   hosts: vms
   become: true
   vars:
-    back_image: lamarr3/simple-fastapi:v2-test
+    back_image: "{{ lookup('env', 'DOCKER_IMAGE_WITH_TAG') }}"
     front_image: nginx:stable-alpine
     env_path: "{{ lookup('env', 'ENV', default='../../src/.env') }}"
     compose_path: ./compose.yaml
