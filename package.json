@@ -1,6 +1,6 @@
 {
     "release": {
-        "branches": ["main", "ci-cd-branch"],
+        "branches": ["ci-cd-branch", "main"],
         "tagFormat": "v${version}-lesson-tag",
         "plugins": [
             "@semantic-release/commit-analyzer",
