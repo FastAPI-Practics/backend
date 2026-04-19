@@ -1,0 +1,9 @@
+- name: Test ping playbook
+  hosts: vms
+  tasks:
+    - name: Ping
+      ansible.builtin.ping:
+
+    - name: Print message
+      ansible.builtin.debug:
+        msg: Hello world!

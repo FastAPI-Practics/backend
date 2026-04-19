@@ -1,7 +1,10 @@
 name: fastapi-compose
 
+x-back-image: &back-image {{back_image}}
+x-front-image: &front-image {{front_image}}
+
 x-base: &base
-  build: .
+  image: *back-image
   env_file:
     - .env
   environment:
@@ -23,6 +26,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    volumes:
+      - pgdata:/var/lib/postgresql/18/docker
 
   alembic:
     <<: *base
@@ -53,7 +58,7 @@ services:
       retries: 3
       start_period: 10s
   web:
-    image: nginx:stable-alpine
+    image: *front-image
     restart: always
     ports:
       - "80:80"

@@ -1,0 +1,36 @@
+- name: Build image playbook
+  hosts: vms
+  become: true
+  vars:
+    image_name: lamarr3/simple-fastapi
+    image_tag: v2-test
+    docker_pass: "{{ lookup('env', 'DOCKER_PASS') }}"
+  tasks:
+    - name: Copy source code
+      ansible.posix.synchronize:
+        src: ../../src/
+        dest: ./src
+        rsync_opts:
+          - "--exclude=.venv"
+
+    - name: Build image
+      community.docker.docker_image_build:
+        name: "{{ image_name }}"
+        tag: "{{ image_tag }}"
+        path: ./src
+
+    - name: Remove source code
+      ansible.builtin.file:
+        path: ./src
+        state: absent
+
+    - name: Login to registry
+      community.docker.docker_login:
+        username: lamarr3
+        password: "{{ docker_pass }}"
+        reauthorize: true
+
+    - name: Push image
+      community.docker.docker_image_push:
+        name: "{{ image_name }}"
+        tag: "{{ image_tag }}"
