@@ -82,7 +82,7 @@ jobs:
         DOCKER_IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME }}
         CI_COMMIT_TAG: ${{ needs.release.outputs.new_release_version }}-lession-github
         DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
-    
+
     - name: Create .env file
       run: echo "${{ secrets.ENV }}" > ~/.env
 
