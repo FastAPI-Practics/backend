@@ -92,7 +92,7 @@ jobs:
         ansible-playbook \
           -i inventory.ini \
           -u ${{ secrets.VM_USER }} \
-          playbooks/build-image-playbook.yaml
+          playbooks/compose-update-playbook.yaml
       env:
         ANSIBLE_FORCE_COLOR: "true"
         ANSIBLE_HOST_KEY_CHECKING: "false"
