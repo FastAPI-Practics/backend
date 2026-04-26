@@ -4,6 +4,13 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from app.core.settings import settings
 
 
+def form_test_db_url() -> str:
+    return URL.create(
+        drivername='sqlite+aiosqlite',
+        database='db.sqlite3',
+    ).render_as_string()
+
+
 def form_db_url() -> str:
     return URL.create(
         drivername=settings.db.driver,

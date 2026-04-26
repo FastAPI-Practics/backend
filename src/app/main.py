@@ -26,8 +26,6 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
-origins = [settings.common.host]
-
 app.add_exception_handler(exc_class_or_status_code=Exception, handler=exception_handler)
 
 app_router = APIRouter(prefix=f'{api_prefix}/v1', responses=common_responses)
@@ -42,7 +40,7 @@ app.include_router(app_router)
 app.middleware('http')(request_logging_middleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.common.cors_hosts,
     allow_credentials=True,
     allow_methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allow_headers=['Authorization', 'Content-Type', 'X-Requested-With'],

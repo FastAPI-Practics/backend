@@ -1,33 +1,30 @@
-# conftest.py
-import asyncio
-from functools import lru_cache
-
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import delete
+from sqlmodel import delete, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.settings import settings
-from app.db.engine import form_db_url
+from app.db.engine import form_test_db_url
+from app.dependencies.session import get_session
 from app.main import app
-from app.models.base import BaseModel
+from app.models.email import EmailAction, EmailNotification
 from app.models.refresh import RefreshSession
+from app.models.roles import Role
+from app.models.users import UserModel, UserStatus
+from app.utils.hasher import Hasher
 
-async_engine = create_async_engine(
-    url=form_db_url(),
-    echo=True
-)
 
-# drop all database every time when test complete
 @pytest_asyncio.fixture(scope='session')
 async def async_db_engine():
-    async with async_engine.begin() as conn:
-        await conn.run_sync(BaseModel.metadata.create_all)
+    async_engine = create_async_engine(
+        url=form_test_db_url(),
+        # echo=True
+    )
 
     yield async_engine
+
 
 @pytest_asyncio.fixture(scope='session')
 async def async_session(async_db_engine):
@@ -39,7 +36,7 @@ async def async_session(async_db_engine):
         class_=AsyncSession,
     )
 
-# truncate all table to isolate tests
+
 @pytest_asyncio.fixture(scope='session')
 async def async_db(async_session):
     async with async_session() as session:
@@ -49,26 +46,22 @@ async def async_db(async_session):
 
         await session.rollback()
 
+
 @pytest_asyncio.fixture(scope='session')
-async def async_client(async_db):
+async def async_client(async_db: AsyncSession):
     transport = ASGITransport(app=app)
 
-    yield AsyncClient(
-        transport=transport,
-        base_url="http://localhost/api/v1"
-    )
+    async def get_session_override():
+        yield async_db
+
+    app.dependency_overrides[get_session] = get_session_override
+
+    yield AsyncClient(transport=transport, base_url='http://localhost/api/v1')
 
     statement = delete(RefreshSession)
     await async_db.exec(statement)
     await async_db.commit()
 
-# let test session to know it is running inside event loop
-@pytest.fixture(scope='session')
-def event_loop():
-    policy = asyncio.get_event_loop_policy()
-    loop = policy.new_event_loop()
-    yield loop
-    loop.close()
 
 @pytest_asyncio.fixture(scope='session')
 async def admin_access_token(async_client: AsyncClient):
@@ -77,7 +70,60 @@ async def admin_access_token(async_client: AsyncClient):
         data={
             'username': 'admin',
             'password': settings.rbac.admin_password,
-        }
+        },
     )
     data = resp.json()
-    yield data.get("access_token")
+    yield data.get('access_token')
+
+
+@pytest_asyncio.fixture(scope='session')
+async def public_access_token(async_db: AsyncSession, async_client: AsyncClient):
+    public_role_stmt = select(Role).where(
+        Role.name == settings.rbac.public_role,
+    )
+    public_role = (await async_db.scalars(public_role_stmt)).first()
+
+    password = 'pass'
+    password_hash = Hasher.get_password_hash(password)
+
+    user = UserModel(
+        first_name='first_name',
+        last_name='last_name',
+        email='test@gmail.com',
+        username='username',
+        status=UserStatus.CONFIRMED,
+        password_hash=password_hash,
+    )
+
+    async_db.add(user)
+    await async_db.commit()
+    await async_db.refresh(user)
+
+    user.role = public_role
+
+    await async_db.commit()
+    await async_db.refresh(user)
+
+    notification = EmailNotification(
+        user_id=user.id, action=EmailAction.VERIFY_ACCOUNT, is_used=True
+    )
+
+    async_db.add(notification)
+    await async_db.commit()
+    await async_db.refresh(notification)
+
+    resp = await async_client.post(
+        url='/auth/login',
+        data={
+            'username': user.username,
+            'password': password,
+        },
+    )
+    data = resp.json()
+    yield data.get('access_token')
+
+    await async_db.delete(user)
+    await async_db.commit()
+
+    await async_db.delete(notification)
+    await async_db.commit()
