@@ -24,6 +24,17 @@ class CommonSettings(BaseModel):
             return 'http://localhost:8000'
         return 'https://example.com'
 
+    @computed_field
+    @property
+    def cors_hosts(self) -> list[str]:
+        if self.debug:
+            return [
+                'http://localhost:8000',
+                'http://localhost:5173',
+                'http://localhost:80',
+            ]
+        return ['https://example.com']
+
 
 class RBACSettings(BaseModel):
     admin_email: EmailStr = 'admin@admin.ru'

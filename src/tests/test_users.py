@@ -1,4 +1,5 @@
 import pytest
+from fastapi import status
 from httpx import AsyncClient
 
 from app.models.users import UserPublic
@@ -10,9 +11,9 @@ async def test_profile(async_client: AsyncClient, admin_access_token: str):
         url='/users/me',
         headers={
             'Authorization': f'Bearer {admin_access_token}',
-        }
+        },
     )
-    assert resp.status_code == 200
+    assert resp.status_code == status.HTTP_200_OK
     data = resp.json()
     user = UserPublic.model_validate(data)
 

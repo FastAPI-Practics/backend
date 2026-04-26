@@ -1,4 +1,5 @@
 import pytest
+from fastapi import status
 from httpx import AsyncClient
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -12,20 +13,19 @@ async def test_roles_list(async_client: AsyncClient, admin_access_token: str):
         url='/roles/',
         headers={
             'Authorization': f'Bearer {admin_access_token}',
-        }
+        },
     )
-    assert resp.status_code == 200
+    assert resp.status_code == status.HTTP_200_OK
     data = resp.json()
     items = data['items']
     roles = [RolePublic.model_validate(item) for item in items]
 
     assert len(roles) == len(INITIAL_PERMISSION_SCHEMA.keys())
 
+
 @pytest.mark.asyncio
 async def test_role_create(
-    async_client: AsyncClient,
-    admin_access_token: str,
-    async_db: AsyncSession
+    async_client: AsyncClient, admin_access_token: str, async_db: AsyncSession
 ):
     role_name = 'test'
     create_resp = await async_client.post(
@@ -33,13 +33,10 @@ async def test_role_create(
         headers={
             'Authorization': f'Bearer {admin_access_token}',
         },
-        json={
-            'name': role_name,
-            'scope_aliases': []
-        }
+        json={'name': role_name, 'scope_aliases': []},
     )
 
-    assert create_resp.status_code == 200
+    assert create_resp.status_code == status.HTTP_200_OK
     data = create_resp.json()
 
     role = RolePublic.model_validate(data)
@@ -50,9 +47,9 @@ async def test_role_create(
         url='/roles/',
         headers={
             'Authorization': f'Bearer {admin_access_token}',
-        }
+        },
     )
-    assert list_resp.status_code == 200
+    assert list_resp.status_code == status.HTTP_200_OK
     data = list_resp.json()
     items = data['items']
     roles = [RolePublic.model_validate(item) for item in items]
@@ -67,9 +64,9 @@ async def test_role_create(
         url='/roles/',
         headers={
             'Authorization': f'Bearer {admin_access_token}',
-        }
+        },
     )
-    assert list_resp.status_code == 200
+    assert list_resp.status_code == status.HTTP_200_OK
     data = list_resp.json()
     items = data['items']
     roles = [RolePublic.model_validate(item) for item in items]
