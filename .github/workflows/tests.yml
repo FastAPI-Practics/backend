@@ -47,7 +47,10 @@ jobs:
     - name: Run tests
       run: |
         cd src
-        uv run -m pytest --junitxml=pytest.xml --cov-report=term-missing --cov=app tests/ | tee pytest-coverage.txt
+        uv run -m pytest \
+          --junitxml=pytest.xml \
+          --cov-report=term-missing \
+          --cov=app tests/ | tee pytest-coverage.txt
 
     - name: Coverage comment
       id: coverage
