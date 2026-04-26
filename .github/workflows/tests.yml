@@ -28,6 +28,7 @@ jobs:
       run: |
         cd src
         uv sync
+        touch db.sqlite3
         uv run python3 test_db_init.py 2> /dev/null
         uv run python3 test_db_init.py
     
