@@ -1,5 +1,8 @@
 # Ветеринарная клиника
 
+<!-- Pytest Coverage Comment:Begin -->
+<!-- Pytest Coverage Comment:End -->
+
 Пример проекта на FastAPI для курса по программированию на Django
 
 ## Команда разработки
