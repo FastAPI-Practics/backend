@@ -33,6 +33,7 @@ jobs:
 
         echo "Create DB"
         sudo touch db.sqlite3
+        sudo chmod -R 777 db.sqlite3
 
         echo "Create .env"
         echo -e "${{ secrets.ENV }}" > .env
