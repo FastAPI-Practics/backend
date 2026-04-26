@@ -50,6 +50,6 @@ jobs:
       id: coverage
       uses: MishaKav/pytest-coverage-comment@v1
       with:
-        pytest-coverage-path: ./pytest-coverage.txt
-        junitxml-path: ./pytest.xml
+        pytest-coverage-path: ./src/pytest-coverage.txt
+        junitxml-path: ./src/pytest.xml
         hide-comment: true
