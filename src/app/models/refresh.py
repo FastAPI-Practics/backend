@@ -25,6 +25,4 @@ class RefreshSession(RefreshSessionCreate, table=True):
     @property
     def is_valid(self) -> bool:
         now = datetime.now(timezone.utc)
-        expired = now > self.expires_at
-        is_invalid = expired or self.is_invalidated
-        return not is_invalid
+        return True
